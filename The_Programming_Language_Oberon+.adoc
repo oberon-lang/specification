@@ -11,7 +11,7 @@
 = The Programming Language Oberon+
 :author: Rochus Keller 
 :email: me@rochus-keller.ch
-:revdate: 2021-07-09
+:revdate: 2021-07-17
 :revremark: work in progress
 :doctype: article
 :listing-caption: Listing
@@ -41,27 +41,27 @@ This report is not intended as a programmer's tutorial. It is intentionally kept
 module Lists<T>
     type
         List*     = ^record
-            value : T
-            next  : List
+            value* : T
+            next*  : List
         end
 
-    proc (l : List) Add* (v : T) 
+    proc (l : List) Add* (v : T)
     begin
     	new( l.next )
     	l.next.value := v
     end Add
-    
-    proc (l : List) Print()
+
+    proc (l : List) Print*()
     begin
     	println(l.value)
     end Print
 end Lists
 
 module ListTest
-	import 
+	import
 		L := Lists<integer>
 	var
-		l := L.List
+		l : L.List
 	begin
 		new(l)
 		l.value := 123
@@ -1261,7 +1261,7 @@ MODULE Lists;
         END
     END Add;
     
-    PROCEDURE (t: Tree) Write*;
+    PROCEDURE (t: List) Write*;
     BEGIN
     	Out.Int(t.value,8); Out.Ln;
     	IF t.next # NIL THEN t.next.Write END;
@@ -1272,7 +1272,7 @@ END Lists.
 .<<oberon-2-example, Same example>> with syntactic simplifications
 [source,oberon]
 ----
-module Lists
+module Lists2
 	import Out
     type
         List*     = ^record
@@ -1290,12 +1290,12 @@ module Lists
         end
     end Add
     
-    proc (t: Tree) Write*
+    proc (t: List) Write*
     begin
     	Out.Int(t.value,8); Out.Ln
     	if t.next # nil then t.next.Write end
     end Write
-end Lists
+end Lists2
 ----
 
 === Generics
@@ -1542,6 +1542,135 @@ DeclarationSequence2 =
 	| VAR { VariableDeclaration [';'] }
 	| ProcedureHeading [';'] } 
 ....
+
+[appendix]
+== More Code Examples
+
+.Procedural programming
+[source,oberon]
+----
+module Fibonacci
+  proc calc*(n : integer): integer
+    var a, b: integer // comma is optional
+  begin
+    if n > 1 then 
+      a := calc(n - 1)
+      b := calc(n - 2)
+      return a + b
+    elsif n = 0 then 
+      return 0
+    else 
+      return 1
+    end
+  end calc
+  var res: integer
+begin
+  res := calc(21)
+  assert(res = 10946)
+end Fibonacci
+----
+
+.Generic programming
+[source,oberon]
+----
+module Collections<T>
+  type Deque* = pointer to record
+                      data: pointer to array of T
+                      size: integer end
+  proc createDeque*(): Deque 
+    const initial_len = 50
+    var this: Deque  // this is initialized to nil
+  begin 
+    new(this); new(this.data,initial_len) 
+             // semicolon is optional
+    return this 
+    // this and data will be garbage collected
+  end createDeque
+  
+  proc (this: Deque) append*(in element: T)
+  begin 
+    if this.size = len(this.data) then assert(false) end
+    this.data[this.size] := element inc(this.size) 
+  end append
+  
+  type Iterator* = record end
+  proc (var this: Iterator) apply*(in element: T) end
+  
+  proc (this: Deque) forEach*(var iter: Iterator)
+    var i: integer
+  begin 
+    for i := 0 to this.size-1 do 
+      iter.apply(this.data[i]) 
+    end
+  end forEach
+end Collections
+----
+
+.Object-oriented programming
+[source,oberon]
+----
+module Drawing
+  import F := Fibonacci
+         C := Collections<Figure>
+  
+  type Figure* = pointer to record
+                   position: record 
+                     x,y: integer end end  
+  proc (this: Figure) draw*() end
+    
+  type
+     Circle* = pointer to record (Figure) 
+                          diameter: integer end
+     Square* = pointer to record (Figure) 
+                          width: integer end 
+  proc (this: Circle) draw*() end
+  proc (this: Square) draw*() end
+        
+  var figures: C.Deque
+       circle: Circle
+       square: Square
+    
+  proc drawAll()
+    type I = record(C.Iterator) count: integer end
+    proc (var this: I) apply( in figure: Figure ) 
+    begin 
+      figure.draw(); inc(this.count) 
+    end apply
+    var i: I // count is initialized to zero
+  begin
+    figures.forEach(i)
+    assert(i.count = 2)
+  end drawAll
+begin 
+  figures := C.createDeque()
+  new(circle)
+  circle.position.x := F.calc(3)
+  circle.position.y := F.calc(4)
+  circle.diameter := 3
+  figures.append(circle)
+  new(square)
+  square.position.x := F.calc(5)
+  square.position.y := F.calc(6)
+  square.width := 4
+  figures.append(square)
+  drawAll()
+end Drawing  
+----
+
+.Unicode support
+[source,oberon]
+----
+module Unicode
+  var
+    str: array 32 of char
+    ustr: array 32 of wchar
+begin
+  str := "Isto é português"
+  ustr := "美丽的世界，你好!" + " " + str
+  println(ustr) 
+  // prints "美丽的世界，你好! Isto é português"
+end Unicode
+----
 
 
 [appendix]

@@ -17,7 +17,7 @@
     <div class="details">
       <span id="author" class="author">Rochus Keller</span><br>
       <span id="email" class="email"><a href="mailto:me@rochus-keller.ch">me@rochus-keller.ch</a></span><br>
-      <span id="revdate">2021-07-09</span>
+      <span id="revdate">2021-07-17</span>
       <br><span id="revremark">work in progress</span>
     </div>
     <div id="toc" class="toc2">
@@ -85,7 +85,8 @@
         </li>
         <li><a href="#_definition_of_terms">Appendix A: Definition of terms</a></li>
         <li><a href="#_syntax_of_oberon">Appendix B: Syntax of Oberon+</a></li>
-        <li><a href="#_references">Appendix C: References</a></li>
+        <li><a href="#_more_code_examples">Appendix C: More Code Examples</a></li>
+        <li><a href="#_references">Appendix D: References</a></li>
       </ul>
     </div>
   </div>
@@ -146,8 +147,8 @@
             <pre class="highlight"><code class="language-oberon" data-lang="oberon">module Lists&lt;T&gt;
     type
         List*     = ^record
-            value : T
-            next  : List
+            value* : T
+            next*  : List
         end
 
     proc (l : List) Add* (v : T)
@@ -156,7 +157,7 @@
     	l.next.value := v
     end Add
 
-    proc (l : List) Print()
+    proc (l : List) Print*()
     begin
     	println(l.value)
     end Print
@@ -166,7 +167,7 @@ module ListTest
 	import
 		L := Lists&lt;integer&gt;
 	var
-		l := L.List
+		l : L.List
 	begin
 		new(l)
 		l.value := 123
@@ -3563,7 +3564,7 @@ ImportPath = { ident '.' }</pre>
         END
     END Add;
 
-    PROCEDURE (t: Tree) Write*;
+    PROCEDURE (t: List) Write*;
     BEGIN
     	Out.Int(t.value,8); Out.Ln;
     	IF t.next # NIL THEN t.next.Write END;
@@ -3575,7 +3576,7 @@ END Lists.</code></pre>
           <div class="title">Listing 3. <a href="#oberon-2-example">Same example</a> with syntactic
             simplifications</div>
           <div class="content">
-            <pre class="highlight"><code class="language-oberon" data-lang="oberon">module Lists
+            <pre class="highlight"><code class="language-oberon" data-lang="oberon">module Lists2
 	import Out
     type
         List*     = ^record
@@ -3593,12 +3594,12 @@ END Lists.</code></pre>
         end
     end Add
 
-    proc (t: Tree) Write*
+    proc (t: List) Write*
     begin
     	Out.Int(t.value,8); Out.Ln
     	if t.next # nil then t.next.Write end
     end Write
-end Lists</code></pre>
+end Lists2</code></pre>
           </div>
         </div>
         <div class="sect2">
@@ -4195,7 +4196,138 @@ DeclarationSequence2 =
       </div>
     </div>
     <div class="sect1">
-      <h2 id="_references">Appendix C: References</h2>
+      <h2 id="_more_code_examples">Appendix C: More Code Examples</h2>
+      <div class="sectionbody">
+        <div class="listingblock">
+          <div class="title">Listing 4. Procedural programming</div>
+          <div class="content">
+            <pre class="highlight"><code class="language-oberon" data-lang="oberon">module Fibonacci
+  proc calc*(n : integer): integer
+    var a, b: integer // comma is optional
+  begin
+    if n &gt; 1 then
+      a := calc(n - 1)
+      b := calc(n - 2)
+      return a + b
+    elsif n = 0 then
+      return 0
+    else
+      return 1
+    end
+  end calc
+  var res: integer
+begin
+  res := calc(21)
+  assert(res = 10946)
+end Fibonacci</code></pre>
+          </div>
+        </div>
+        <div class="listingblock">
+          <div class="title">Listing 5. Generic programming</div>
+          <div class="content">
+            <pre class="highlight"><code class="language-oberon" data-lang="oberon">module Collections&lt;T&gt;
+  type Deque* = pointer to record
+                      data: pointer to array of T
+                      size: integer end
+  proc createDeque*(): Deque
+    const initial_len = 50
+    var this: Deque  // this is initialized to nil
+  begin
+    new(this); new(this.data,initial_len)
+             // semicolon is optional
+    return this
+    // this and data will be garbage collected
+  end createDeque
+
+  proc (this: Deque) append*(in element: T)
+  begin
+    if this.size = len(this.data) then assert(false) end
+    this.data[this.size] := element inc(this.size)
+  end append
+
+  type Iterator* = record end
+  proc (var this: Iterator) apply*(in element: T) end
+
+  proc (this: Deque) forEach*(var iter: Iterator)
+    var i: integer
+  begin
+    for i := 0 to this.size-1 do
+      iter.apply(this.data[i])
+    end
+  end forEach
+end Collections</code></pre>
+          </div>
+        </div>
+        <div class="listingblock">
+          <div class="title">Listing 6. Object-oriented programming</div>
+          <div class="content">
+            <pre class="highlight"><code class="language-oberon" data-lang="oberon">module Drawing
+  import F := Fibonacci
+         C := Collections&lt;Figure&gt;
+
+  type Figure* = pointer to record
+                   position: record
+                     x,y: integer end end
+  proc (this: Figure) draw*() end
+
+  type
+     Circle* = pointer to record (Figure)
+                          diameter: integer end
+     Square* = pointer to record (Figure)
+                          width: integer end
+  proc (this: Circle) draw*() end
+  proc (this: Square) draw*() end
+
+  var figures: C.Deque
+       circle: Circle
+       square: Square
+
+  proc drawAll()
+    type I = record(C.Iterator) count: integer end
+    proc (var this: I) apply( in figure: Figure )
+    begin
+      figure.draw(); inc(this.count)
+    end apply
+    var i: I // count is initialized to zero
+  begin
+    figures.forEach(i)
+    assert(i.count = 2)
+  end drawAll
+begin
+  figures := C.createDeque()
+  new(circle)
+  circle.position.x := F.calc(3)
+  circle.position.y := F.calc(4)
+  circle.diameter := 3
+  figures.append(circle)
+  new(square)
+  square.position.x := F.calc(5)
+  square.position.y := F.calc(6)
+  square.width := 4
+  figures.append(square)
+  drawAll()
+end Drawing</code></pre>
+          </div>
+        </div>
+        <div class="listingblock">
+          <div class="title">Listing 7. Unicode support</div>
+          <div class="content">
+            <pre class="highlight"><code class="language-oberon" data-lang="oberon">module Unicode
+  var
+    str: array 32 of char
+    ustr: array 32 of wchar
+begin
+  str := "Isto é português"
+  ustr := "美丽的世界，你好!" + " " + str
+  println(ustr)
+  // prints "美丽的世界，你好! Isto é português"
+end Unicode</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="sect1">
+      <h2 id="_references">Appendix D: References</h2>
       <div class="sectionbody">
         <div class="ulist">
           <ul>
