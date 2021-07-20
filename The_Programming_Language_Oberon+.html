@@ -17,7 +17,7 @@
     <div class="details">
       <span id="author" class="author">Rochus Keller</span><br>
       <span id="email" class="email"><a href="mailto:me@rochus-keller.ch">me@rochus-keller.ch</a></span><br>
-      <span id="revdate">2021-07-17</span>
+      <span id="revdate">2021-07-20</span>
       <br><span id="revremark">work in progress</span>
     </div>
     <div id="toc" class="toc2">
@@ -74,7 +74,8 @@
           <ul class="sectlevel2">
             <li><a href="#_formal_parameters">10.1. Formal parameters</a></li>
             <li><a href="#_type_bound_procedures">10.2. Type-bound procedures</a></li>
-            <li><a href="#_predeclared_procedures">10.3. Predeclared procedures</a></li>
+            <li><a href="#_type_bound_procedure_types">10.3. Type-bound procedure types</a></li>
+            <li><a href="#_predeclared_procedures">10.4. Predeclared procedures</a></li>
           </ul>
         </li>
         <li><a href="#_modules">11. Modules</a>
@@ -2409,17 +2410,17 @@ end log2</pre>
             <p>Procedures may be associated with a record type declared in the same
               scope. The procedures are said to be bound to the record type. The
               binding is expressed by the type of the receiver in the heading of
-              a procedure declaration. The receiver may be either a variable (VAR)
-              parameter of record type T or a value parameter of type POINTER TO
-              T (where T is a record type). The procedure is bound to the type T
-              and is considered local to it.</p>
+              a procedure declaration. The receiver may be either a variable (VAR
+              or IN) parameter of record type T or a value parameter of type POINTER
+              TO T (where T is a record type). The procedure is bound to the type
+              T and is considered local to it.</p>
           </div>
           <div class="literalblock">
             <div class="title">Syntax:</div>
             <div class="content">
               <pre>ProcedureHeading = ( PROCEDURE | PROC )
 				   [Receiver] identdef [ FormalParameters ]
-Receiver         = '(' [VAR] ident ':' ident ')'</pre>
+Receiver         = '(' [VAR|IN] ident ':' ident ')'</pre>
             </div>
           </div>
           <div class="paragraph">
@@ -2427,11 +2428,8 @@ Receiver         = '(' [VAR] ident ':' ident ')'</pre>
               any type T1 which is an extension of T0. However, a procedure P' (with
               the same name as P) may be explicitly bound to T1 in which case it
               overrides the binding of P. P' is considered a redefinition of P for
-              T1. The formal parameter lists of P and P' must <em>match</em> (see
-              <a href="#_definition_of_terms">Definition of terms</a>). Also the
-              result types must <em>match</em>, or if P and P' both have pointer
-              result types, then the result type of P' must be an <em>extension</em>              of the result type of P <sup class="footnote">[<a id="_footnoteref_5" class="footnote" href="#_footnote_5" title="View footnote.">5</a>]</sup>.
-              If P and T1 are exported (see <a href="#_declarations_and_scope_rules">Declarations and scope rules</a>)
+              T1. The formal parameters of P and P' must <em>match</em> (see <a href="#_definition_of_terms">Definition of terms</a>).
+              If P and T1 are exported (see <a href="#_declarations_and_scope_rules">Declarations and scope rules</a>),
               P' must be exported too.</p>
           </div>
           <div class="paragraph">
@@ -2490,14 +2488,36 @@ end Insert</pre>
           </div>
         </div>
         <div class="sect2">
-          <h3 id="_predeclared_procedures">10.3. Predeclared procedures</h3>
+          <h3 id="_type_bound_procedure_types">10.3. Type-bound procedure types</h3>
+          <div class="paragraph">
+            <p>Variables of a type-bound procedure type T have a type-bound procedure
+              or NIL as value. To assign a type-bound procedure P to a variable of
+              a type-bound procedure type T, the right side of the assignment must
+              be a designator of the form <code>v^.P</code> or <code>v.P</code>,
+              where <code>v</code> is a pointer to record and <code>P</code> is a
+              procedure bound to this record. Note, that the dynamic type of <code>v</code>              determines which procedure is assigned; this may be a different procedure
+              than the one bound to the static type of <code>v</code>. The formal
+              parameter lists and result types (see <a href="#_formal_parameters">Formal parameters</a>)
+              of P and T must <em>match</em> (see <a href="#_definition_of_terms">Definition of terms</a>).
+              The same rules apply when passing a type-bound procedure to a formal
+              argument of a type-bound procedure type.</p>
+          </div>
+          <div class="literalblock">
+            <div class="title">Syntax:</div>
+            <div class="content">
+              <pre>ProcedureType = PROCEDURE '^' [FormalParameters]</pre>
+            </div>
+          </div>
+        </div>
+        <div class="sect2">
+          <h3 id="_predeclared_procedures">10.4. Predeclared procedures</h3>
           <div class="paragraph">
             <p>The following table lists the predeclared procedures. Some are generic
               procedures, i.e. they apply to several types of operands. <code>v</code>              stands for a variable, <code>x</code> and <code>n</code> for expressions,
               and T for a type.</p>
           </div>
           <div class="sect3">
-            <h4 id="_predeclared_function_procedures">10.3.1. Predeclared function procedures</h4>
+            <h4 id="_predeclared_function_procedures">10.4.1. Predeclared function procedures</h4>
             <table class="tableblock frame-all grid-all spread">
               <colgroup>
                 <col style="width: 12.5%;">
@@ -3242,7 +3262,7 @@ end Insert</pre>
             </div>
           </div>
           <div class="sect3">
-            <h4 id="_predeclared_proper_procedures">10.3.2. Predeclared proper procedures</h4>
+            <h4 id="_predeclared_proper_procedures">10.4.2. Predeclared proper procedures</h4>
             <table class="tableblock frame-all grid-all spread">
               <colgroup>
                 <col style="width: 16.6666%;">
@@ -3751,7 +3771,7 @@ declarations = { CONST { ConstDeclaration [';'] }
                   </li>
                   <li>
                     <p>T<sub>e</sub> and T<sub>v</sub> are numeric or character types
-                      and T<sub>v</sub> <em>includes</em> T<sub>e</sub> <sup class="footnote">[<a id="_footnoteref_6" class="footnote" href="#_footnote_6" title="View footnote.">6</a>]</sup>;</p>
+                      and T<sub>v</sub> <em>includes</em> T<sub>e</sub> <sup class="footnote">[<a id="_footnoteref_5" class="footnote" href="#_footnote_5" title="View footnote.">5</a>]</sup>;</p>
                   </li>
                   <li>
                     <p>T<sub>v</sub> is a SET type and T<sub>e</sub> is of INTEGER or
@@ -4111,7 +4131,7 @@ FieldListSequence = FieldList [ ';' ] { FieldList [ ';' ] }
 FieldList = IdentList ':' type
 IdentList = identdef { [','] identdef}
 PointerType = ( POINTER TO | '^' ) type
-ProcedureType = ( PROCEDURE | PROC ) [FormalParameters]
+ProcedureType = ( PROCEDURE | PROC ) ['^'] [FormalParameters]
 VariableDeclaration = IdentList ':' type
 designator = qualident {selector}
 selector = '.' ident | '[' ExpList ']' | '^' | '(' qualident ')'
@@ -4164,7 +4184,7 @@ ProcedureDeclaration = ProcedureHeading [ ';' ]
 	ProcedureBody END ident
 ProcedureHeading = ( PROCEDURE | PROC ) [Receiver]
 	 identdef [ FormalParameters ]
-Receiver = '(' [VAR] ident ':' ident ')'
+Receiver = '(' [VAR|IN] ident ':' ident ')'
 ProcedureBody = DeclarationSequence
 	[ BEGIN StatementSequence
 	| ReturnStatement [ ';' ] ]
@@ -4392,11 +4412,7 @@ end Unicode</code></pre>
       <a href="#_footnoteref_4">4</a>. adopted from <a href="#Om01">[Om01]</a>
     </div>
     <div class="footnote" id="_footnote_5">
-      <a href="#_footnoteref_5">5</a>. this is called <em>covariance</em>, adopted
-      with modifications from <a href="#Om01">[Om01]</a>
-    </div>
-    <div class="footnote" id="_footnote_6">
-      <a href="#_footnoteref_6">6</a>. character types include strings with length
+      <a href="#_footnoteref_5">5</a>. character types include strings with length
       1
     </div>
   </div>

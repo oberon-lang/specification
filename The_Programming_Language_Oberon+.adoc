@@ -11,7 +11,7 @@
 = The Programming Language Oberon+
 :author: Rochus Keller 
 :email: me@rochus-keller.ch
-:revdate: 2021-07-17
+:revdate: 2021-07-20
 :revremark: work in progress
 :doctype: article
 :listing-caption: Listing
@@ -1050,16 +1050,19 @@ end log2
 ....
 
 === Type-bound procedures
-Procedures may be associated with a record type declared in the same scope. The procedures are said to be bound to the record type. The binding is expressed by the type of the receiver in the heading of a procedure declaration. The receiver may be either a variable (VAR) parameter of record type T or a value parameter of type POINTER TO T (where T is a record type). The procedure is bound to the type T and is considered local to it.
+Procedures may be associated with a record type declared in the same scope. The procedures are said to be bound to the record type. The binding is expressed by the type of the receiver in the heading of a procedure declaration. The receiver may be either a variable (VAR or IN) parameter of record type T or a value parameter of type POINTER TO T (where T is a record type). The procedure is bound to the type T and is considered local to it.
 
 .Syntax:
 ....
 ProcedureHeading = ( PROCEDURE | PROC ) 
 				   [Receiver] identdef [ FormalParameters ]
-Receiver         = '(' [VAR] ident ':' ident ')'
+Receiver         = '(' [VAR|IN] ident ':' ident ')'
 ....
 
-If a procedure P is bound to a type T0, it is implicitly also bound to any type T1 which is an extension of T0. However, a procedure P' (with the same name as P) may be explicitly bound to T1 in which case it overrides the binding of P. P' is considered a redefinition of P for T1. The formal parameter lists of P and P' must _match_ (see <<Definition of terms>>). Also the result types must _match_, or if P and P' both have pointer result types, then the result type of P' must be an _extension_ of the result type of P footnote:[this is called _covariance_, adopted with modifications from <<Om01>>]. If P and T1 are exported (see <<Declarations and scope rules>>) P' must be exported too.
+If a procedure P is bound to a type T0, it is implicitly also bound to any type T1 which is an extension of T0. However, a procedure P' (with the same name as P) may be explicitly bound to T1 in which case it overrides the binding of P. P' is considered a redefinition of P for T1. The formal parameters of P and P' must _match_ (see <<Definition of terms>>). If P and T1 are exported (see <<Declarations and scope rules>>), P' must be exported too.
+
+// TODO: shall we really support Covariance?
+//The formal parameter lists of P and P' must _match_ (see <<Definition of terms>>). Also the result types must _match_, or if P and P' both have pointer result types, then the result type of P' must be an _extension_ of the result type of P footnote:[this is called _covariance_, adopted with modifications from <<Om01>>]. 
 
 If `v` is a designator and `P` is a type-bound procedure, then `v.P` denotes that procedure `P` which is bound to the dynamic type of `v`. Note, that this may be a different procedure than the one bound to the static type of `v`. `v` is passed to `P`'s receiver according to the parameter passing rules specified in Chapter <<Formal parameters>>.
 
@@ -1096,7 +1099,15 @@ end Insert
 [NOTE]
 The name of a type-bound procedure must be unique within the type to which it is bound, not within the scope in which it is declared.
 
-// TODO type-bound procedure types (delegates)
+=== Type-bound procedure types
+Variables of a type-bound procedure type T have a type-bound procedure or NIL as value. To assign a type-bound procedure P to a variable of a type-bound procedure type T, the right side of the assignment must be a designator of the form `v^.P` or `v.P`, where `v` is a pointer to record and `P` is a procedure bound to this record. Note, that the dynamic type of `v` determines which procedure is assigned; this may be a different procedure than the one bound to the static type of `v`. The formal parameter lists and result types (see <<Formal parameters>>) of P and T must _match_ (see <<Definition of terms>>). The same rules apply when passing a type-bound procedure to a formal argument of a type-bound procedure type.
+
+.Syntax:
+....
+ProcedureType = PROCEDURE '^' [FormalParameters]
+....
+
+// proc () (args) would actually be the more intuitive syntax, but it is ambiguous with an empty/missing parameter list
 
 === Predeclared procedures
 The following table lists the predeclared procedures. Some are generic procedures, i.e. they apply to several types of operands. `v` stands for a variable, `x` and `n` for expressions, and T for a type.
@@ -1461,7 +1472,7 @@ FieldListSequence = FieldList [ ';' ] { FieldList [ ';' ] }
 FieldList = IdentList ':' type
 IdentList = identdef { [','] identdef}
 PointerType = ( POINTER TO | '^' ) type
-ProcedureType = ( PROCEDURE | PROC ) [FormalParameters]
+ProcedureType = ( PROCEDURE | PROC ) ['^'] [FormalParameters]
 VariableDeclaration = IdentList ':' type
 designator = qualident {selector}
 selector = '.' ident | '[' ExpList ']' | '^' | '(' qualident ')' 
@@ -1514,7 +1525,7 @@ ProcedureDeclaration = ProcedureHeading [ ';' ]
 	ProcedureBody END ident 
 ProcedureHeading = ( PROCEDURE | PROC ) [Receiver]
 	 identdef [ FormalParameters ]
-Receiver = '(' [VAR] ident ':' ident ')'
+Receiver = '(' [VAR|IN] ident ':' ident ')'
 ProcedureBody = DeclarationSequence 
 	[ BEGIN StatementSequence
 	| ReturnStatement [ ';' ] ]
