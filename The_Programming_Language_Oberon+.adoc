@@ -11,9 +11,9 @@
 = The Programming Language Oberon+
 :author: Rochus Keller 
 :email: me@rochus-keller.ch
-:revdate: 2021-07-20
+:revdate: 2021-07-23
 :revremark: work in progress
-:doctype: article
+:doctype: article 
 :listing-caption: Listing
 :sectnums:
 :toc: left
@@ -38,7 +38,7 @@ This report is not intended as a programmer's tutorial. It is intentionally kept
 [[obx-generics-example]]
 [source,oberon]
 ----
-module Lists<T>
+module Lists(T)
     type
         List*     = ^record
             value* : T
@@ -59,7 +59,7 @@ end Lists
 
 module ListTest
 	import
-		L := Lists<integer>
+		L := Lists(integer)
 	var
 		l : L.List
 	begin
@@ -1314,13 +1314,15 @@ Oberon+ supports generic programming. Modules can be made generic by adding form
 
 .Syntax:
 ....
-TypeParams       = '<' ident { [','] ident } '>'
-TypeActuals      = '<' NamedType { ',' NamedType } '>' 
+TypeParams       = '(' ident { [','] ident } ')'
+TypeActuals      = '(' NamedType { [','] NamedType } ')' 
 module = MODULE ident [ TypeParams ] [';'] { ImportList | DeclarationSequence }
 	[ BEGIN StatementSequence ] END ident ['.']
 ImportList = IMPORT import { [','] import } [';']
 import = [ ident ':=' ] ImportPath ident [ TypeActuals ] 
 ....
+
+Alternatively '<' and '>' can be used to bracket TypeParams and TypeActuals.
 
 See also <<obx-generics-example, this example>>.
 
@@ -1459,8 +1461,8 @@ TypeDeclaration = identdef '=' type
 type = NamedType | enumeration
 	| ArrayType | RecordType | PointerType | ProcedureType
 NamedType = qualident
-TypeParams = '<' ident { [','] ident } '>'
-TypeActuals = '<' NamedType { ',' NamedType } '>' 
+TypeParams = '(' ident { [','] ident } ')'
+TypeActuals = '(' NamedType { ',' NamedType } ')' 
 enumeration = '('  ident { [','] ident } ')' 
 ArrayType = ARRAY [ LengthList ] OF type 
 	 | '[' [ LengthList ] ']' type
@@ -1584,7 +1586,7 @@ end Fibonacci
 .Generic programming
 [source,oberon]
 ----
-module Collections<T>
+module Collections(T)
   type Deque* = pointer to record
                       data: pointer to array of T
                       size: integer end
@@ -1622,7 +1624,7 @@ end Collections
 ----
 module Drawing
   import F := Fibonacci
-         C := Collections<Figure>
+         C := Collections(Figure)
   
   type Figure* = pointer to record
                    position: record 

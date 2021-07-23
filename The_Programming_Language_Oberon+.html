@@ -17,7 +17,7 @@
     <div class="details">
       <span id="author" class="author">Rochus Keller</span><br>
       <span id="email" class="email"><a href="mailto:me@rochus-keller.ch">me@rochus-keller.ch</a></span><br>
-      <span id="revdate">2021-07-20</span>
+      <span id="revdate">2021-07-23</span>
       <br><span id="revremark">work in progress</span>
     </div>
     <div id="toc" class="toc2">
@@ -145,7 +145,7 @@
           <div class="title">Listing 1. Oberon+ example featuring syntactic simplifications and type
             parameters</div>
           <div class="content">
-            <pre class="highlight"><code class="language-oberon" data-lang="oberon">module Lists&lt;T&gt;
+            <pre class="highlight"><code class="language-oberon" data-lang="oberon">module Lists(T)
     type
         List*     = ^record
             value* : T
@@ -166,7 +166,7 @@ end Lists
 
 module ListTest
 	import
-		L := Lists&lt;integer&gt;
+		L := Lists(integer)
 	var
 		l : L.List
 	begin
@@ -3635,13 +3635,17 @@ end Lists2</code></pre>
           <div class="literalblock">
             <div class="title">Syntax:</div>
             <div class="content">
-              <pre>TypeParams       = '&lt;' ident { [','] ident } '&gt;'
-TypeActuals      = '&lt;' NamedType { ',' NamedType } '&gt;'
+              <pre>TypeParams       = '(' ident { [','] ident } ')'
+TypeActuals      = '(' NamedType { [','] NamedType } ')'
 module = MODULE ident [ TypeParams ] [';'] { ImportList | DeclarationSequence }
 	[ BEGIN StatementSequence ] END ident ['.']
 ImportList = IMPORT import { [','] import } [';']
 import = [ ident ':=' ] ImportPath ident [ TypeActuals ]</pre>
             </div>
+          </div>
+          <div class="paragraph">
+            <p>Alternatively '&lt;' and '&gt;' can be used to bracket TypeParams and
+              TypeActuals.</p>
           </div>
           <div class="paragraph">
             <p>See also <a href="#obx-generics-example">this example</a>.</p>
@@ -4118,8 +4122,8 @@ TypeDeclaration = identdef '=' type
 type = NamedType | enumeration
 	| ArrayType | RecordType | PointerType | ProcedureType
 NamedType = qualident
-TypeParams = '&lt;' ident { [','] ident } '&gt;'
-TypeActuals = '&lt;' NamedType { ',' NamedType } '&gt;'
+TypeParams = '(' ident { [','] ident } ')'
+TypeActuals = '(' NamedType { ',' NamedType } ')'
 enumeration = '('  ident { [','] ident } ')'
 ArrayType = ARRAY [ LengthList ] OF type
 	 | '[' [ LengthList ] ']' type
@@ -4245,7 +4249,7 @@ end Fibonacci</code></pre>
         <div class="listingblock">
           <div class="title">Listing 5. Generic programming</div>
           <div class="content">
-            <pre class="highlight"><code class="language-oberon" data-lang="oberon">module Collections&lt;T&gt;
+            <pre class="highlight"><code class="language-oberon" data-lang="oberon">module Collections(T)
   type Deque* = pointer to record
                       data: pointer to array of T
                       size: integer end
@@ -4283,7 +4287,7 @@ end Collections</code></pre>
           <div class="content">
             <pre class="highlight"><code class="language-oberon" data-lang="oberon">module Drawing
   import F := Fibonacci
-         C := Collections&lt;Figure&gt;
+         C := Collections(Figure)
 
   type Figure* = pointer to record
                    position: record
