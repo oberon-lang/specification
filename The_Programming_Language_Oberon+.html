@@ -17,7 +17,7 @@
     <div class="details">
       <span id="author" class="author">Rochus Keller</span><br>
       <span id="email" class="email"><a href="mailto:me@rochus-keller.ch">me@rochus-keller.ch</a></span><br>
-      <span id="revdate">2021-07-23</span>
+      <span id="revdate">2021-07-30</span>
       <br><span id="revremark">work in progress</span>
     </div>
     <div id="toc" class="toc2">
@@ -2334,8 +2334,8 @@ DeclarationSequence  = { CONST { ConstDeclaration [';'] }
                   <div class="title">Note</div>
                 </td>
                 <td class="content">
-                  In contrast to previous Oberon versions the result type of a procedure may also be
-                  a structured type.
+                  In contrast to previous Oberon versions the return type of a procedure may also be
+                  a record or array type.
                 </td>
               </tr>
             </table>
@@ -2345,7 +2345,7 @@ DeclarationSequence  = { CONST { ConstDeclaration [';'] }
             <div class="content">
               <pre>FormalParameters = '(' [ FPSection { [';'] FPSection } ] ')'
                    [ ':' ReturnType ]
-ReturnType       = NamedType | ( POINTER TO | '^') NamedType
+ReturnType       = type
 FPSection        = [ VAR | IN ] ident { [','] ident }
                    ':' FormalType
 FormalType       = type</pre>
@@ -4200,7 +4200,7 @@ DeclarationSequence =
 ReturnStatement = RETURN [ expression ]
 FormalParameters = '(' [ FPSection { [';'] FPSection } ] ')'
 	[ ':' ReturnType ]
-ReturnType = NamedType | ( POINTER TO | '^') NamedType
+ReturnType = type
 FPSection = [ VAR | IN ] ident { [','] ident } ':' FormalType
 FormalType = type
 module = MODULE ident [ TypeParams ] [';'] { ImportList | DeclarationSequence }

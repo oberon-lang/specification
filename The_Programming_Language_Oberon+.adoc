@@ -11,7 +11,7 @@
 = The Programming Language Oberon+
 :author: Rochus Keller 
 :email: me@rochus-keller.ch
-:revdate: 2021-07-23
+:revdate: 2021-07-30
 :revremark: work in progress
 :doctype: article 
 :listing-caption: Listing
@@ -1000,13 +1000,13 @@ Value parameters are local variables to which the value of the corresponding act
 The scope of a formal parameter extends from its declaration to the end of the procedure block in which it is declared. A function procedure without parameters must have an empty parameter list. It must be called by a function designator whose actual parameter list is empty too. 
 
 [NOTE]
-In contrast to previous Oberon versions the result type of a procedure may also be a structured type.
+In contrast to previous Oberon versions the return type of a procedure may also be a record or array type.
 
 .Syntax:
 ....
 FormalParameters = '(' [ FPSection { [';'] FPSection } ] ')' 
                    [ ':' ReturnType ]
-ReturnType       = NamedType | ( POINTER TO | '^') NamedType
+ReturnType       = type
 FPSection        = [ VAR | IN ] ident { [','] ident } 
                    ':' FormalType 
 FormalType       = type
@@ -1539,7 +1539,7 @@ DeclarationSequence =
 ReturnStatement = RETURN [ expression ] 
 FormalParameters = '(' [ FPSection { [';'] FPSection } ] ')' 
 	[ ':' ReturnType ]
-ReturnType = NamedType | ( POINTER TO | '^') NamedType
+ReturnType = type
 FPSection = [ VAR | IN ] ident { [','] ident } ':' FormalType 
 FormalType = type
 module = MODULE ident [ TypeParams ] [';'] { ImportList | DeclarationSequence }
