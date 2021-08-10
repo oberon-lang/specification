@@ -11,7 +11,7 @@
 = The Programming Language Oberon+
 :author: Rochus Keller 
 :email: me@rochus-keller.ch
-:revdate: 2021-07-30
+:revdate: 2021-08-10
 :revremark: work in progress
 :doctype: article 
 :listing-caption: Listing
@@ -261,7 +261,7 @@ identdef  = ident ['*' | '-']
 [NOTE]
 Oberon-07 only knows the `*` export mark; all module variables are exported read-only and exported record fields are writable. Oberon+ and Oberon-2 permit finer control writability of exported variables and fields.
 
-The following identifiers are predeclared; their meaning is defined in the indicated sections:
+The following identifiers are predeclared; their meaning is defined in the indicated sections; either all capital or all lower case identifiers are supported (only capital versions shown).
 [cols="1,1,1,1"]
 |===
 |ABS      
@@ -364,28 +364,28 @@ Function = procedure(x: integer): integer
 ....
 
 === Basic types
-The basic types are denoted by predeclared identifiers. The associated operators are defined in <<Operators>> and the predeclared function procedures in <<Predeclared procedures>>. The values of the given basic types are the following:
+The basic types are denoted by predeclared identifiers. The associated operators are defined in <<Operators>> and the predeclared function procedures in <<Predeclared procedures>>. Either all capital or all lower case identifiers are supported (only capital versions shown).The values of the given basic types are the following:
 
 [cols="2,5"]
 |====================================================
-| BOOLEAN, boolean   |  the truth values true and false
-| BYTE, byte   |  the integers between 0 and 255
-| CHAR, char      |  the characters of the Latin-1 set (0x .. 0ffx)
-| SHORTINT, shortint  |  the integers between MIN(SHORTINT) and MAX(SHORTINT)
-| INTEGER, INT, integer, int   |  the integers between MIN(INTEGER) and MAX(INTEGER)
-| LONGINT, longint   |  the integers between MIN(LONGINT) and MAX(LONGINT)
-| REAL, real      |  the real numbers between MIN(REAL) and MAX(REAL)
-| LONGREAL, longreal  |  the real numbers between MIN(LONGREAL) and MAX(LONGREAL)
+| BOOLEAN   |  the truth values true and false
+| BYTE   |  the integers between 0 and 255
+| CHAR      |  the characters of the Latin-1 set (0x .. 0ffx)
+| SHORTINT  |  the integers between MIN(SHORTINT) and MAX(SHORTINT)
+| INTEGER   |  the integers between MIN(INTEGER) and MAX(INTEGER)
+| LONGINT   |  the integers between MIN(LONGINT) and MAX(LONGINT)
+| REAL      |  the real numbers between MIN(REAL) and MAX(REAL)
+| LONGREAL  |  the real numbers between MIN(LONGREAL) and MAX(LONGREAL)
 //| I16, i16 |  the integers between -32'768 and 32'767
 //| I32, i32 |  the integers between -2'147'483'648 and 2'147'483'647
 //| I64, i64 |  the integers between -9'223'372'036'854'775'808 and 9'223'372'036'854'775'807
 //| F32, f32 |  32 bit IEEE 754 floating point number between -3.4e38 and 3.4e38
 //| F64, f64 |  64 bit IEEE 754 floating point number between -1.8e308 and 1.8e308
-| SET, set       |  the sets of integers between 0 and MAX(SET)
-| WCHAR, wchar	 | the characters of the Unicode BMP set (0x .. 0d7ffx, 0f900x .. 0ffffx)
+| SET       |  the sets of integers between 0 and MAX(SET)
+| WCHAR	 | the characters of the Unicode BMP set (0x .. 0d7ffx, 0f900x .. 0ffffx)
 |====================================================
 
-Types LONGINT, INTEGER, SHORTINT and BYTE are integer types, types REAL and LONGREAL are floating point types, and together they are called numeric types. INT is the abbreviation for INTEGER. The specific bit precision of these types (besides BYTE) is implementation specific, but the larger type includes (the values of) the smaller type according to the following relations:
+Types LONGINT, INTEGER, SHORTINT and BYTE are integer types, types REAL and LONGREAL are floating point types, and together they are called numeric types. The larger type includes (the values of) the smaller type according to the following relations:
 
 [[type-inclusion-relations]]
 ....
@@ -398,6 +398,8 @@ WCHAR >= CHAR
 
 [NOTE]
 The precision of BYTE and CHAR is 8 bits. The precision of WCHAR is 16 bits. The bit precision of LONGINT is limited by the bit precision of the LONGREAL mantissa bit precision (which is 52 bits in case of IEEE 754 double precision representation). REAL is not expected to (fully) include INTEGER; if an INTEGER is assigned to a REAL, the compiler issues a warning unless the predeclared function FLT is used. The bit precision of SHORTINT is equal or greater than the bit precision of BYTE.
+
+// TODO: add specific byte resolutions for all types
 
 === Array types
 An array is a structure consisting of a number of elements which are all of the same type, called the element type. The number of elements of an array is called its length. The elements of the array are designated by indices, which are integers between 0 and the length minus 1.
@@ -724,7 +726,7 @@ If an expression `e` of type T~e~ is assigned to a variable `v` of type T~v~, th
 . if T~v~ and T~e~ are record types, only those fields of T~e~ are assigned which also belong to T~v~ (projection); the dynamic type of `v` must be the same as the static type of `v` and is not changed by the assignment;
 . if T~v~ and T~e~ are pointer types, the dynamic type of `v` becomes the dynamic type of `e`;
 . if T~v~ is `ARRAY n OF CHAR` and `e` is a string of length m < n, `v[i]` becomes e~i~ for i = 0..m-1 and `v[m]` becomes 0X; 
-. if T~v~ and T~e~ are open or closed CHAR arrays, `v[i]` becomes `e[i]` for i = 0..STRLEN(e); if LEN(v) \<= STRLEN(e) or `e` is not terminated by 0X the program halts;
+. if T~v~ and T~e~ are open or non-open CHAR arrays, `v[i]` becomes `e[i]` for i = 0..STRLEN(e); if LEN(v) \<= STRLEN(e) or `e` is not terminated by 0X the program halts;
 . if T~v~ is an open CHAR array and `e` is a string `v[i]` becomes `e[i]` for i = 0..LEN(e)-1 and `v[LEN(e)]` becomes 0X; if LEN(v) \<= LEN(e) the program halts;
 
 
@@ -997,10 +999,10 @@ Formal parameters are identifiers declared in the formal parameter list of a pro
 
 Value parameters are local variables to which the value of the corresponding actual parameter is assigned as an initial value. VAR parameters correspond to actual parameters that are variables, and they stand for these variables. IN parameters are like VAR parameters, but they are read-only in the procedure body. 
 
-The scope of a formal parameter extends from its declaration to the end of the procedure block in which it is declared. A function procedure without parameters must have an empty parameter list. It must be called by a function designator whose actual parameter list is empty too. 
+The scope of a formal parameter extends from its declaration to the end of the procedure block in which it is declared. A function procedure without parameters must have an empty parameter list. It must be called by a function designator whose actual parameter list is empty too. The result type of a procedure cannot be an open array. 
 
 [NOTE]
-In contrast to previous Oberon versions the return type of a procedure may also be a record or array type.
+In contrast to previous Oberon versions the return type of a procedure may also be a record or array type, and it is possible to ignore the return value of a function procedure call.
 
 .Syntax:
 ....
@@ -1104,10 +1106,9 @@ Variables of a type-bound procedure type T have a type-bound procedure or NIL as
 
 .Syntax:
 ....
-ProcedureType = PROCEDURE '^' [FormalParameters]
+ProcedureType = PROCEDURE '(' ( POINTER | '^' ) ')' [FormalParameters]
 ....
 
-// proc () (args) would actually be the more intuitive syntax, but it is ambiguous with an empty/missing parameter list
 
 === Predeclared procedures
 The following table lists the predeclared procedures. Some are generic procedures, i.e. they apply to several types of operands. `v` stands for a variable, `x` and `n` for expressions, and T for a type.
@@ -1474,7 +1475,7 @@ FieldListSequence = FieldList [ ';' ] { FieldList [ ';' ] }
 FieldList = IdentList ':' type
 IdentList = identdef { [','] identdef}
 PointerType = ( POINTER TO | '^' ) type
-ProcedureType = ( PROCEDURE | PROC ) ['^'] [FormalParameters]
+ProcedureType = ( PROCEDURE | PROC ) ['(' ( POINTER | '^' ) ')'] [FormalParameters]
 VariableDeclaration = IdentList ':' type
 designator = qualident {selector}
 selector = '.' ident | '[' ExpList ']' | '^' | '(' qualident ')' 

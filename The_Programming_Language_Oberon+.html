@@ -17,7 +17,7 @@
     <div class="details">
       <span id="author" class="author">Rochus Keller</span><br>
       <span id="email" class="email"><a href="mailto:me@rochus-keller.ch">me@rochus-keller.ch</a></span><br>
-      <span id="revdate">2021-07-30</span>
+      <span id="revdate">2021-08-10</span>
       <br><span id="revremark">work in progress</span>
     </div>
     <div id="toc" class="toc2">
@@ -682,7 +682,8 @@ identdef  = ident ['*' | '-']</pre>
         </div>
         <div class="paragraph">
           <p>The following identifiers are predeclared; their meaning is defined in
-            the indicated sections:</p>
+            the indicated sections; either all capital or all lower case identifiers
+            are supported (only capital versions shown).</p>
         </div>
         <table class="tableblock frame-all grid-all spread">
           <colgroup>
@@ -947,7 +948,9 @@ Function = procedure(x: integer): integer</pre>
             <p>The basic types are denoted by predeclared identifiers. The associated
               operators are defined in <a href="#_operators">Operators</a> and the
               predeclared function procedures in <a href="#_predeclared_procedures">Predeclared procedures</a>.
-              The values of the given basic types are the following:</p>
+              Either all capital or all lower case identifiers are supported (only
+              capital versions shown).The values of the given basic types are the
+              following:</p>
           </div>
           <table class="tableblock frame-all grid-all spread">
             <colgroup>
@@ -957,7 +960,7 @@ Function = procedure(x: integer): integer</pre>
             <tbody>
               <tr>
                 <td class="tableblock halign-left valign-top">
-                  <p class="tableblock">BOOLEAN, boolean</p>
+                  <p class="tableblock">BOOLEAN</p>
                 </td>
                 <td class="tableblock halign-left valign-top">
                   <p class="tableblock">the truth values true and false</p>
@@ -965,7 +968,7 @@ Function = procedure(x: integer): integer</pre>
               </tr>
               <tr>
                 <td class="tableblock halign-left valign-top">
-                  <p class="tableblock">BYTE, byte</p>
+                  <p class="tableblock">BYTE</p>
                 </td>
                 <td class="tableblock halign-left valign-top">
                   <p class="tableblock">the integers between 0 and 255</p>
@@ -973,7 +976,7 @@ Function = procedure(x: integer): integer</pre>
               </tr>
               <tr>
                 <td class="tableblock halign-left valign-top">
-                  <p class="tableblock">CHAR, char</p>
+                  <p class="tableblock">CHAR</p>
                 </td>
                 <td class="tableblock halign-left valign-top">
                   <p class="tableblock">the characters of the Latin-1 set (0x .. 0ffx)</p>
@@ -981,7 +984,7 @@ Function = procedure(x: integer): integer</pre>
               </tr>
               <tr>
                 <td class="tableblock halign-left valign-top">
-                  <p class="tableblock">SHORTINT, shortint</p>
+                  <p class="tableblock">SHORTINT</p>
                 </td>
                 <td class="tableblock halign-left valign-top">
                   <p class="tableblock">the integers between MIN(SHORTINT) and MAX(SHORTINT)</p>
@@ -989,7 +992,7 @@ Function = procedure(x: integer): integer</pre>
               </tr>
               <tr>
                 <td class="tableblock halign-left valign-top">
-                  <p class="tableblock">INTEGER, INT, integer, int</p>
+                  <p class="tableblock">INTEGER</p>
                 </td>
                 <td class="tableblock halign-left valign-top">
                   <p class="tableblock">the integers between MIN(INTEGER) and MAX(INTEGER)</p>
@@ -997,7 +1000,7 @@ Function = procedure(x: integer): integer</pre>
               </tr>
               <tr>
                 <td class="tableblock halign-left valign-top">
-                  <p class="tableblock">LONGINT, longint</p>
+                  <p class="tableblock">LONGINT</p>
                 </td>
                 <td class="tableblock halign-left valign-top">
                   <p class="tableblock">the integers between MIN(LONGINT) and MAX(LONGINT)</p>
@@ -1005,7 +1008,7 @@ Function = procedure(x: integer): integer</pre>
               </tr>
               <tr>
                 <td class="tableblock halign-left valign-top">
-                  <p class="tableblock">REAL, real</p>
+                  <p class="tableblock">REAL</p>
                 </td>
                 <td class="tableblock halign-left valign-top">
                   <p class="tableblock">the real numbers between MIN(REAL) and MAX(REAL)</p>
@@ -1013,7 +1016,7 @@ Function = procedure(x: integer): integer</pre>
               </tr>
               <tr>
                 <td class="tableblock halign-left valign-top">
-                  <p class="tableblock">LONGREAL, longreal</p>
+                  <p class="tableblock">LONGREAL</p>
                 </td>
                 <td class="tableblock halign-left valign-top">
                   <p class="tableblock">the real numbers between MIN(LONGREAL) and MAX(LONGREAL)</p>
@@ -1021,7 +1024,7 @@ Function = procedure(x: integer): integer</pre>
               </tr>
               <tr>
                 <td class="tableblock halign-left valign-top">
-                  <p class="tableblock">SET, set</p>
+                  <p class="tableblock">SET</p>
                 </td>
                 <td class="tableblock halign-left valign-top">
                   <p class="tableblock">the sets of integers between 0 and MAX(SET)</p>
@@ -1029,7 +1032,7 @@ Function = procedure(x: integer): integer</pre>
               </tr>
               <tr>
                 <td class="tableblock halign-left valign-top">
-                  <p class="tableblock">WCHAR, wchar</p>
+                  <p class="tableblock">WCHAR</p>
                 </td>
                 <td class="tableblock halign-left valign-top">
                   <p class="tableblock">the characters of the Unicode BMP set (0x .. 0d7ffx, 0f900x ..
@@ -1041,10 +1044,8 @@ Function = procedure(x: integer): integer</pre>
           <div class="paragraph">
             <p>Types LONGINT, INTEGER, SHORTINT and BYTE are integer types, types REAL
               and LONGREAL are floating point types, and together they are called
-              numeric types. INT is the abbreviation for INTEGER. The specific bit
-              precision of these types (besides BYTE) is implementation specific,
-              but the larger type includes (the values of) the smaller type according
-              to the following relations:</p>
+              numeric types. The larger type includes (the values of) the smaller
+              type according to the following relations:</p>
           </div>
           <div id="type-inclusion-relations" class="literalblock">
             <div class="content">
@@ -1834,7 +1835,7 @@ ActualParameters = '(' [ ExpList ] ')'</pre>
                 <p>if T<sub>v</sub> is <code>ARRAY n OF CHAR</code> and <code>e</code>                  is a string of length m &lt; n, <code>v[i]</code> becomes e<sub>i</sub>                  for i = 0..m-1 and <code>v[m]</code> becomes 0X;</p>
               </li>
               <li>
-                <p>if T<sub>v</sub> and T<sub>e</sub> are open or closed CHAR arrays,
+                <p>if T<sub>v</sub> and T<sub>e</sub> are open or non-open CHAR arrays,
                   <code>v[i]</code> becomes <code>e[i]</code> for i = 0..STRLEN(e);
                   if LEN(v) &lt;= STRLEN(e) or <code>e</code> is not terminated by
                   0X the program halts;</p>
@@ -2325,7 +2326,8 @@ DeclarationSequence  = { CONST { ConstDeclaration [';'] }
             <p>The scope of a formal parameter extends from its declaration to the end
               of the procedure block in which it is declared. A function procedure
               without parameters must have an empty parameter list. It must be called
-              by a function designator whose actual parameter list is empty too.</p>
+              by a function designator whose actual parameter list is empty too.
+              The result type of a procedure cannot be an open array.</p>
           </div>
           <div class="admonitionblock note">
             <table>
@@ -2335,7 +2337,8 @@ DeclarationSequence  = { CONST { ConstDeclaration [';'] }
                 </td>
                 <td class="content">
                   In contrast to previous Oberon versions the return type of a procedure may also be
-                  a record or array type.
+                  a record or array type, and it is possible to ignore the return
+                  value of a function procedure call.
                 </td>
               </tr>
             </table>
@@ -2505,7 +2508,7 @@ end Insert</pre>
           <div class="literalblock">
             <div class="title">Syntax:</div>
             <div class="content">
-              <pre>ProcedureType = PROCEDURE '^' [FormalParameters]</pre>
+              <pre>ProcedureType = PROCEDURE '(' ( POINTER | '^' ) ')' [FormalParameters]</pre>
             </div>
           </div>
         </div>
@@ -4135,7 +4138,7 @@ FieldListSequence = FieldList [ ';' ] { FieldList [ ';' ] }
 FieldList = IdentList ':' type
 IdentList = identdef { [','] identdef}
 PointerType = ( POINTER TO | '^' ) type
-ProcedureType = ( PROCEDURE | PROC ) ['^'] [FormalParameters]
+ProcedureType = ( PROCEDURE | PROC ) ['(' ( POINTER | '^' ) ')'] [FormalParameters]
 VariableDeclaration = IdentList ':' type
 designator = qualident {selector}
 selector = '.' ident | '[' ExpList ']' | '^' | '(' qualident ')'
