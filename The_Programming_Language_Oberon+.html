@@ -17,7 +17,7 @@
     <div class="details">
       <span id="author" class="author">Rochus Keller</span><br>
       <span id="email" class="email"><a href="mailto:me@rochus-keller.ch">me@rochus-keller.ch</a></span><br>
-      <span id="revdate">2021-08-10</span>
+      <span id="revdate">2021-11-07</span>
       <br><span id="revremark">work in progress</span>
     </div>
     <div id="toc" class="toc2">
@@ -84,6 +84,15 @@
             <li><a href="#_definitions">11.2. Definitions</a></li>
           </ul>
         </li>
+        <li><a href="#_foreign_function_interface">12. Foreign Function Interface</a>
+          <ul class="sectlevel2">
+            <li><a href="#_external_library_modules">12.1. External Library Modules</a></li>
+            <li><a href="#_c_types">12.2. C Types</a></li>
+            <li><a href="#_type_interoperability">12.3. Type interoperability</a></li>
+            <li><a href="#_external_procedures">12.4. External procedures</a></li>
+            <li><a href="#_implicit_address_of_operation">12.5. Implicit address-of operation</a></li>
+          </ul>
+        </li>
         <li><a href="#_definition_of_terms">Appendix A: Definition of terms</a></li>
         <li><a href="#_syntax_of_oberon">Appendix B: Syntax of Oberon+</a></li>
         <li><a href="#_more_code_examples">Appendix C: More Code Examples</a></li>
@@ -131,7 +140,8 @@
         <div class="paragraph">
           <p>Furthermore, enumeration types (known as <em>scalar types</em> in Pascal
             <a href="#Wi73">[Wi73]</a>) have been added to the language. IN can be
-            used instead of VAR for constant variable parameters.</p>
+            used instead of VAR for constant variable parameters. The foreign function
+            interface (FFI) is a regular feature of the language.</p>
         </div>
         <div class="paragraph">
           <p>This report is not intended as a programmer&#8217;s tutorial. It is intentionally
@@ -3131,6 +3141,18 @@ end Insert</pre>
                 <tr>
                   <td class="tableblock halign-left valign-top"></td>
                   <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">x: SHORTINT</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">BYTE</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">identity</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="tableblock halign-left valign-top"></td>
+                  <td class="tableblock halign-left valign-top">
                     <p class="tableblock">x: LONGREAL</p>
                   </td>
                   <td class="tableblock halign-left valign-top">
@@ -3630,10 +3652,10 @@ end Lists2</code></pre>
           <div class="paragraph">
             <p>Oberon+ supports generic programming. Modules can be made generic by
               adding formal type parameters. Generic modules can be instantiated
-              with different types which makes it easier to design reusable algorithms
+              with different types which enables the design of reusable algorithms
               and data structures. The instantiation of a generic module occurs when
-              importing it. A generic module can be instantiated more than one time
-              in the same module with different type parameters. See <a href="#_modules">Modules</a></p>
+              importing it. A generic module can be instantiated more than once in
+              the same module with different type parameters. See <a href="#_modules">Modules</a></p>
           </div>
           <div class="literalblock">
             <div class="title">Syntax:</div>
@@ -3649,6 +3671,31 @@ import = [ ident ':=' ] ImportPath ident [ TypeActuals ]</pre>
           <div class="paragraph">
             <p>Alternatively '&lt;' and '&gt;' can be used to bracket TypeParams and
               TypeActuals.</p>
+          </div>
+          <div class="paragraph">
+            <p>Type parameters can be used within the generic module like normal types
+              wherever no information about the actual type is required. The rules
+              for <em>same types</em> and <em>equal types</em> apply analogously
+              to type parameters, and subsequently also the corresponding assignment,
+              parameter and array compatibility rules (see <a href="#_definitions">Definitions</a>).
+              A type parameter is assumed to have a default value, but nothing is
+              known about its inclusion or extension relationships with other types.</p>
+          </div>
+          <div class="admonitionblock note">
+            <table>
+              <tr>
+                <td class="icon">
+                  <div class="title">Note</div>
+                </td>
+                <td class="content">
+                  It follows that a type parameter cannot be the base type of a record or a pointer
+                  (because we don&#8217;t know before instantiation whether the type
+                  parameter represents e.g. a record or not); but it is e.g. possible
+                  to use a record declared in the same or another generic module
+                  as a base type.
+                </td>
+              </tr>
+            </table>
           </div>
           <div class="paragraph">
             <p>See also <a href="#obx-generics-example">this example</a>.</p>
@@ -3668,12 +3715,321 @@ import = [ ident ':=' ] ImportPath ident [ TypeActuals ]</pre>
           <div class="literalblock">
             <div class="title">Syntax:</div>
             <div class="content">
-              <pre>definition   = DEFINITION ident [';']  [ ImportList ] declarations END ident ['.']
-declarations = { CONST { ConstDeclaration [';'] }
+              <pre>definition   = DEFINITION ident [';']  [ ImportList ] DeclarationSequence2 END ident ['.']
+DeclarationSequence2 = { CONST { ConstDeclaration [';'] }
 			   | TYPE { TypeDeclaration [';'] }
 			   | VAR { VariableDeclaration [';'] }
 			   | ProcedureHeading [';'] }</pre>
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="sect1">
+      <h2 id="_foreign_function_interface">12. Foreign Function Interface</h2>
+      <div class="sectionbody">
+        <div class="paragraph">
+          <p>Oberon+ includes the possibility to call functions from and exchange data
+            with external C shared libraries. To avoid confusion with existing POINTER,
+            ARRAY and RECORD types, Oberon+ includes special C compatible types.</p>
+        </div>
+        <div class="sect2">
+          <h3 id="_external_library_modules">12.1. External Library Modules</h3>
+          <div class="paragraph">
+            <p>An external library module is a DEFINITION module with an attribute list,
+              and with a few more differences to normal DEFINITIONs, which will be
+              discussed in the following.</p>
+          </div>
+          <div class="literalblock">
+            <div class="title">Syntax</div>
+            <div class="content">
+              <pre>definition = DEFINITION ident attributeList [';'] [ ImportList ] DeclarationSequence3 END ident ['.']
+attributeList = '[' [ attribute { ',' attribute }  ] ']'
+attribute = ident { constExpression }
+DeclarationSequence3 =
+	{ CONST { ConstDeclaration [';'] }
+	| TYPE { TypeDeclaration [';'] }
+	| ProcedureHeading [ attributeList ] [';'] }</pre>
+            </div>
+          </div>
+          <div class="paragraph">
+            <p>An external library module can only import other external library modules,
+              but not ordinary or definition modules. Module variables are not supported.</p>
+          </div>
+          <div class="paragraph">
+            <p>The following attributes are defined on module level:</p>
+          </div>
+          <table class="tableblock frame-all grid-all spread">
+            <colgroup>
+              <col style="width: 20%;">
+              <col style="width: 20%;">
+              <col style="width: 60%;">
+            </colgroup>
+            <thead>
+              <tr>
+                <th class="tableblock halign-left valign-top">Name</th>
+                <th class="tableblock halign-left valign-top">Type, Value</th>
+                <th class="tableblock halign-left valign-top">Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="tableblock halign-left valign-top">
+                  <p class="tableblock">extern</p>
+                </td>
+                <td class="tableblock halign-left valign-top">
+                  <p class="tableblock">string, 'C'</p>
+                </td>
+                <td class="tableblock halign-left valign-top">
+                  <p class="tableblock">optional; as soon as an attribute list is present (even an empty
+                    one), extern 'C' is assumed</p>
+                </td>
+              </tr>
+              <tr>
+                <td class="tableblock halign-left valign-top">
+                  <p class="tableblock">dll</p>
+                </td>
+                <td class="tableblock halign-left valign-top">
+                  <p class="tableblock">string</p>
+                </td>
+                <td class="tableblock halign-left valign-top">
+                  <p class="tableblock">mandatory; the name of the library; on Windows ".dll" is appended;
+                    on Linux "lib" is prepended and ".so" is appended</p>
+                </td>
+              </tr>
+              <tr>
+                <td class="tableblock halign-left valign-top">
+                  <p class="tableblock">prefix</p>
+                </td>
+                <td class="tableblock halign-left valign-top">
+                  <p class="tableblock">string</p>
+                </td>
+                <td class="tableblock halign-left valign-top">
+                  <p class="tableblock">optional; the name under which a procedure is known in the external
+                    library corresponds to the procedure name combined with the prefix</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="sect2">
+          <h3 id="_c_types">12.2. C Types</h3>
+          <div class="paragraph">
+            <p>In an external library module only C types and named types pointing to
+              C types can be declared. A C type is either a CSTRUCT, CUNION, CARRAY,
+              CPOINTER, procedure type or basic type. Structured C types are not
+              subject to garbage collection and cannot be instantiated with NEW.</p>
+          </div>
+          <div class="literalblock">
+            <div class="title">Syntax:</div>
+            <div class="content">
+              <pre>C_Type = ( CSTRUCT | CUNION ) FieldList { [';'] FieldList} END
+		| ( CPOINTER TO | '*' ) ( C_Type | VOID )
+		| CARRAY [ length ] OF C_Type
+		| ( PROCEDURE | PROC ) [FormalParameters]
+		| BasicType</pre>
+            </div>
+          </div>
+          <div class="paragraph">
+            <p>A CARRAY is a one-dimensional array of C_Types. A CARRAY declared without
+              length is an open array. An open CARRAY can only be used as a CPOINTER
+              base type. LEN(v) is undefined if v is an open CARRAY. An open CARRAY
+              cannot be on the left or right side of an assignment unless the element
+              type is CHAR or WCHAR.</p>
+          </div>
+          <div class="paragraph">
+            <p>A CPOINTER can point to CSTRUCT, CUNION, CARRAY or VOID.</p>
+          </div>
+          <div class="paragraph">
+            <p>CSTRUCT and CUNION are the Oberon+ representation of C struct and C union.
+              Field types are restricted to C_Types.</p>
+          </div>
+          <div class="paragraph">
+            <p>The basic types correspond to the ones defined in <a href="#Basic Types">[Basic Types]</a>.
+              BOOLEAN and BYTE map to uint8_t, CHAR to the C char type, SHORTINT
+              to int16_t, WCHAR to uint16_t, INTEGER to int32_t, LONGINT to int64_t,
+              REAL to float, LONGREAL to double, and SET to uint32_t.</p>
+          </div>
+          <div class="paragraph">
+            <p>The formal parameter types of a procedure type compatible with an external
+              library module can only be of C_Type. VAR and IN are not supported
+              in external library modules, and CARRAY cannot be passed by value.</p>
+          </div>
+          <div class="admonitionblock note">
+            <table>
+              <tr>
+                <td class="icon">
+                  <div class="title">Note</div>
+                </td>
+                <td class="content">
+                  Instead of writing <code>cpointer to T</code> one can simply write
+                  <code>*T</code>; <code>cpointer to carray of T</code> can be abbreviated
+                  by <code>*[]T</code>. In C an out parameter is usually implemented
+                  by a pointer; when the value to be put out is itself a pointer,
+                  the parameter is a pointer to pointer; Oberon+ doesn&#8217;t support
+                  pointer to pointer, but the same effect can be achieved by a pointer
+                  to an array of length one of the pointer type, e.g. <code>*[1]*T</code>,
+                  or just an open array <code>*[]*T</code> for simplicity; but of
+                  course one can also write <code>cpointer to carray of cpointer to T</code>,
+                  or equivalently <code>CPOINTER TO CARRAY OF CPOINTER TO T</code>.
+                </td>
+              </tr>
+            </table>
+          </div>
+          <div class="admonitionblock note">
+            <table>
+              <tr>
+                <td class="icon">
+                  <div class="title">Note</div>
+                </td>
+                <td class="content">
+                  In Oberon+ POINTER, RECORD and ARRAY are considered safe, whereas CPOINTER, CSTRUCT,
+                  CUNION and CARRAY are considered unsafe; of course, it must always
+                  be assessed on a case-by-case basis whether a specific application
+                  of C_Types is safe or unsafe.
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+        <div class="sect2">
+          <h3 id="_type_interoperability">12.3. Type interoperability</h3>
+          <div class="paragraph">
+            <p>ARRAY and RECORD types cannot be used in external library modules, but
+              it is perfectly legal to use C_Types as formal parameter, or local
+              or module variable types in regular Oberon+ modules. CPOINTER (but
+              not structured C_Types) can be used as field or element type in RECORD
+              or ARRAY.</p>
+          </div>
+          <div class="paragraph">
+            <p>POINTER and CPOINTER are disjoint in what they can point to and it is
+              not possible to assign from a POINTER to a CPOINTER or vice versa.</p>
+          </div>
+          <div class="paragraph">
+            <p>A CARRAY and an ARRAY are only assignment compatible if both element
+              types are either CHAR or WCHAR.</p>
+          </div>
+        </div>
+        <div class="sect2">
+          <h3 id="_external_procedures">12.4. External procedures</h3>
+          <div class="paragraph">
+            <p>The formal parameter types of an external procedure can only be of C_Type.
+              VAR and IN are not supported, and CARRAY cannot be passed by value.</p>
+          </div>
+          <div class="paragraph">
+            <p>The following attributes can be applied to each procedure:</p>
+          </div>
+          <table class="tableblock frame-all grid-all spread">
+            <colgroup>
+              <col style="width: 20%;">
+              <col style="width: 20%;">
+              <col style="width: 60%;">
+            </colgroup>
+            <thead>
+              <tr>
+                <th class="tableblock halign-left valign-top">Name</th>
+                <th class="tableblock halign-left valign-top">Type, Value</th>
+                <th class="tableblock halign-left valign-top">Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="tableblock halign-left valign-top">
+                  <p class="tableblock">dll</p>
+                </td>
+                <td class="tableblock halign-left valign-top">
+                  <p class="tableblock">string</p>
+                </td>
+                <td class="tableblock halign-left valign-top">
+                  <p class="tableblock">optional; override of the module wide library name for the given
+                    procedure</p>
+                </td>
+              </tr>
+              <tr>
+                <td class="tableblock halign-left valign-top">
+                  <p class="tableblock">prefix</p>
+                </td>
+                <td class="tableblock halign-left valign-top">
+                  <p class="tableblock">string</p>
+                </td>
+                <td class="tableblock halign-left valign-top">
+                  <p class="tableblock">optional; override of the module wide prefix for the given procedure</p>
+                </td>
+              </tr>
+              <tr>
+                <td class="tableblock halign-left valign-top">
+                  <p class="tableblock">alias</p>
+                </td>
+                <td class="tableblock halign-left valign-top">
+                  <p class="tableblock">string</p>
+                </td>
+                <td class="tableblock halign-left valign-top">
+                  <p class="tableblock">optional; the name by which the given procedure is known in the
+                    external library</p>
+                </td>
+              </tr>
+              <tr>
+                <td class="tableblock halign-left valign-top">
+                  <p class="tableblock">varargs</p>
+                </td>
+                <td class="tableblock halign-left valign-top">
+                  <p class="tableblock">-</p>
+                </td>
+                <td class="tableblock halign-left valign-top">
+                  <p class="tableblock">optional; if present the given procedure accepts optional arguments
+                    (in addition to the ones specified); same as the <code>&#8230;&#8203;</code>                    parameter in C</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="sect2">
+          <h3 id="_implicit_address_of_operation">12.5. Implicit address-of operation</h3>
+          <div class="paragraph">
+            <p>Oberon+ implicitly takes the address of a CSTRUCT, CUNION or CARRAY</p>
+          </div>
+          <div class="ulist">
+            <ul>
+              <li>
+                <p>when passing an actual value of this type to a formal parameter of
+                  CPOINTER type of a procedure in an external library module,</p>
+              </li>
+              <li>
+                <p>and when assigning a value of this type to a variable of CPOINTER
+                  type;</p>
+              </li>
+            </ul>
+          </div>
+          <div class="paragraph">
+            <p>in both cases the CPOINTER base type must be <em>assignment compatible</em>              with the actual or assigned value type (see <a href="#_definition_of_terms">Definition of terms</a>);
+              as an extension to this rule, each structured C_Type is compatible
+              with a CPOINTER TO VOID.</p>
+          </div>
+          <div class="paragraph">
+            <p>Oberon+ supports passing an actual parameter of ARRAY type or a string
+              literal to a formal parameter of CPOINTER TO CARRAY type of a procedure
+              in an external library module, if the CARRAY and ARRAY element types
+              are <em>assignment compatible</em>; as an extension to this rule, an
+              ARRAY of an unstructured type or a string literal is compatible with
+              a CPOINTER TO VOID. The compiler or runtime system in use is free to
+              either create a CARRAY copy of the ARRAY or string literal, or to directly
+              pass the memory address for efficiency reasons; in the latter case
+              the compiler or runtime system assure that the memory address remains
+              valid during the call.</p>
+          </div>
+          <div class="admonitionblock note">
+            <table>
+              <tr>
+                <td class="icon">
+                  <div class="title">Note</div>
+                </td>
+                <td class="content">
+                  Remember that taking the address of a variable is a potentially unsafe operation
+                  because the memory location the address points to could become
+                  invalid.
+                </td>
+              </tr>
+            </table>
           </div>
         </div>
       </div>
@@ -4219,6 +4575,18 @@ DeclarationSequence2 =
 	| VAR { VariableDeclaration [';'] }
 	| ProcedureHeading [';'] }</pre>
           </div>
+        </div>
+        <div class="admonitionblock note">
+          <table>
+            <tr>
+              <td class="icon">
+                <div class="title">Note</div>
+              </td>
+              <td class="content">
+                The <a href="#_foreign_function_interface">Foreign Function Interface</a>                syntax is not included here.
+              </td>
+            </tr>
+          </table>
         </div>
       </div>
     </div>

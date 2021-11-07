@@ -11,7 +11,7 @@
 = The Programming Language Oberon+
 :author: Rochus Keller 
 :email: me@rochus-keller.ch
-:revdate: 2021-08-10
+:revdate: 2021-11-07
 :revremark: work in progress
 :doctype: article 
 :listing-caption: Listing
@@ -30,7 +30,7 @@ A major design goal of Oberon in 1987 was to make the language as simple as poss
  
 The language allows several simplifications compared to previous Oberon versions: keywords can be written in lower case, all semicolons are optional, and for some keywords there are shorter variants; a declaration sequence can contain more than one CONST, TYPE and VAR section in arbitrary order, interleaved with procedures. 
 
-Furthermore, enumeration types (known as _scalar types_ in Pascal <<Wi73>>) have been added to the language. IN can be used instead of VAR for constant variable parameters.
+Furthermore, enumeration types (known as _scalar types_ in Pascal <<Wi73>>) have been added to the language. IN can be used instead of VAR for constant variable parameters. The foreign function interface (FFI) is a regular feature of the language.
 
 This report is not intended as a programmer's tutorial. It is intentionally kept concise. Its function is to serve as a reference for programmers, implementors, and tutorial writers. What remains unsaid is mostly left so intentionally, either because it can be derived from stated rules of the language, or because it would require to commit the definition when a general commitment appears as unwise.
 
@@ -1163,6 +1163,7 @@ The following table lists the predeclared procedures. Some are generic procedure
 |ROR(x, n)   |x, n: INTEGER        |INTEGER        |x rotated right by n bits
 |SHORT(x)    |x: LONGINT           |INTEGER        |identity
 |            |x: INTEGER           |SHORTINT       |identity
+|            |x: SHORTINT          |BYTE           |identity
 |            |x: LONGREAL          |REAL           |identity (truncation possible)
 |            |x: WCHAR			   |CHAR		   |projection (0x if there is no projection)
 |			 |x: array of wchar or Unicode string | Latin-1 string | projection ("?" for characters where there is no projection)
@@ -1311,7 +1312,7 @@ end Lists2
 ----
 
 === Generics
-Oberon+ supports generic programming. Modules can be made generic by adding formal type parameters. Generic modules can be instantiated with different types which makes it easier to design reusable algorithms and data structures. The instantiation of a generic module occurs when importing it. A generic module can be instantiated more than one time in the same module with different type parameters. See <<Modules>>
+Oberon+ supports generic programming. Modules can be made generic by adding formal type parameters. Generic modules can be instantiated with different types which enables the design of reusable algorithms and data structures. The instantiation of a generic module occurs when importing it. A generic module can be instantiated more than once in the same module with different type parameters. See <<Modules>>
 
 .Syntax:
 ....
@@ -1325,6 +1326,11 @@ import = [ ident ':=' ] ImportPath ident [ TypeActuals ]
 
 Alternatively '<' and '>' can be used to bracket TypeParams and TypeActuals.
 
+Type parameters can be used within the generic module like normal types wherever no information about the actual type is required. The rules for _same types_ and _equal types_ apply analogously to type parameters, and subsequently also the corresponding assignment, parameter and array compatibility rules (see <<Definitions>>). A type parameter is assumed to have a default value, but nothing is known about its inclusion or extension relationships with other types.
+
+[NOTE]
+It follows that a type parameter cannot be the base type of a record or a pointer (because we don't know before instantiation whether the type parameter represents e.g. a record or not); but it is e.g. possible to use a record declared in the same or another generic module as a base type.
+
 See also <<obx-generics-example, this example>>.
 
 === Definitions
@@ -1334,16 +1340,110 @@ Definitions can be used when the implementation of a module is not available or 
 
 .Syntax:
 ....
-definition   = DEFINITION ident [';']  [ ImportList ] declarations END ident ['.']
-declarations = { CONST { ConstDeclaration [';'] }
+definition   = DEFINITION ident [';']  [ ImportList ] DeclarationSequence2 END ident ['.']
+DeclarationSequence2 = { CONST { ConstDeclaration [';'] }
 			   | TYPE { TypeDeclaration [';'] }
 			   | VAR { VariableDeclaration [';'] }
 			   | ProcedureHeading [';'] } 
 ....
 
-// TODO: specify interoperability rules with C, possibly with C specific data structures and procedures, including manual memory management.
-// unsafe pointer, carray, cstruct, cunion
-// unsafe pointer to integer etc.
+
+== Foreign Function Interface
+
+Oberon+ includes the possibility to call functions from and exchange data with external C shared libraries. To avoid confusion with existing POINTER, ARRAY and RECORD types, Oberon+ includes special C compatible types.
+
+=== External Library Modules
+
+An external library module is a DEFINITION module with an attribute list, and with a few more differences to normal DEFINITIONs, which will be discussed in the following.  
+
+.Syntax
+....
+definition = DEFINITION ident attributeList [';'] [ ImportList ] DeclarationSequence3 END ident ['.']
+attributeList = '[' [ attribute { ',' attribute }  ] ']'
+attribute = ident { constExpression }
+DeclarationSequence3 = 
+	{ CONST { ConstDeclaration [';'] }
+	| TYPE { TypeDeclaration [';'] }
+	| ProcedureHeading [ attributeList ] [';'] } 
+....
+
+An external library module can only import other external library modules, but not ordinary or definition modules. Module variables are not supported.
+
+The following attributes are defined on module level:
+
+[%header,cols="1,1,3"] 
+|===
+|Name            |Type, Value   |Description
+|extern          |string, 'C'   |optional; as soon as an attribute list is present (even an empty one), extern 'C' is assumed
+|dll			 |string        |mandatory; the name of the library; on Windows ".dll" is appended; on Linux "lib" is prepended and ".so" is appended
+|prefix          |string        |optional; the name under which a procedure is known in the external library corresponds to the procedure name combined with the prefix
+|===
+
+=== C Types
+
+In an external library module only C types and named types pointing to C types can be declared. A C type is either a CSTRUCT, CUNION, CARRAY, CPOINTER, procedure type or basic type. Structured C types are not subject to garbage collection and cannot be instantiated with NEW.
+
+.Syntax:
+....
+C_Type = ( CSTRUCT | CUNION ) FieldList { [';'] FieldList} END
+		| ( CPOINTER TO | '*' ) ( C_Type | VOID )
+		| CARRAY [ length ] OF C_Type
+		| ( PROCEDURE | PROC ) [FormalParameters]
+		| BasicType
+....
+
+A CARRAY is a one-dimensional array of C_Types. A CARRAY declared without length is an open array. An open CARRAY can only be used as a CPOINTER base type. LEN(v) is undefined if v is an open CARRAY. An open CARRAY cannot be on the left or right side of an assignment unless the element type is CHAR or WCHAR.
+
+A CPOINTER can point to CSTRUCT, CUNION, CARRAY or VOID. 
+
+CSTRUCT and CUNION are the Oberon+ representation of C struct and C union. Field types are restricted to C_Types. 
+
+The basic types correspond to the ones defined in <<Basic Types>>. BOOLEAN and BYTE map to uint8_t, CHAR to the C char type, SHORTINT to int16_t, WCHAR to uint16_t, INTEGER to int32_t, LONGINT to int64_t, REAL to float, LONGREAL to double, and SET to uint32_t.
+
+The formal parameter types of a procedure type compatible with an external library module can only be of C_Type. VAR and IN are not supported in external library modules, and CARRAY cannot be passed by value.
+
+[NOTE]
+Instead of writing `cpointer to T` one can simply write `\*T`; `cpointer to carray of T` can be abbreviated by `*[]T`. In C an out parameter is usually implemented by a pointer; when the value to be put out is itself a pointer, the parameter is a pointer to pointer; Oberon+ doesn't support pointer to pointer, but the same effect can be achieved by a pointer to an array of length one of the pointer type, e.g. `\*[1]*T`, or just an open array `*[]*T` for simplicity; but of course one can also write `cpointer to carray of cpointer to T`, or equivalently `CPOINTER TO CARRAY OF CPOINTER TO T`.
+
+[NOTE]
+In Oberon+ POINTER, RECORD and ARRAY are considered safe, whereas CPOINTER, CSTRUCT, CUNION and CARRAY are considered unsafe; of course, it must always be assessed on a case-by-case basis whether a specific application of C_Types is safe or unsafe.
+ 
+=== Type interoperability
+
+ARRAY and RECORD types cannot be used in external library modules, but it is perfectly legal to use C_Types as formal parameter, or local or module variable types in regular Oberon+ modules. CPOINTER (but not structured C_Types) can be used as field or element type in RECORD or ARRAY.
+
+POINTER and CPOINTER are disjoint in what they can point to and it is not possible to assign from a POINTER to a CPOINTER or vice versa.
+
+A CARRAY and an ARRAY are only assignment compatible if both element types are either CHAR or WCHAR.
+
+=== External procedures
+
+The formal parameter types of an external procedure can only be of C_Type. VAR and IN are not supported, and CARRAY cannot be passed by value.
+
+The following attributes can be applied to each procedure:
+
+[%header,cols="1,1,3"] 
+|===
+|Name            |Type, Value   |Description
+|dll			 |string        |optional; override of the module wide library name for the given procedure
+|prefix          |string        |optional; override of the module wide prefix for the given procedure
+|alias			 |string        |optional; the name by which the given procedure is known in the external library
+|varargs	     |-             |optional; if present the given procedure accepts optional arguments (in addition to the ones specified); same as the `...` parameter in C 
+|===
+
+=== Implicit address-of operation
+
+Oberon+ implicitly takes the address of a CSTRUCT, CUNION or CARRAY 
+
+- when passing an actual value of this type to a formal parameter of CPOINTER type of a procedure in an external library module,
+- and when assigning a value of this type to a variable of CPOINTER type;
+
+in both cases the CPOINTER base type must be _assignment compatible_ with the actual or assigned value type (see <<Definition of terms>>); as an extension to this rule, each structured C_Type is compatible with a CPOINTER TO VOID.
+
+Oberon+ supports passing an actual parameter of ARRAY type or a string literal to a formal parameter of CPOINTER TO CARRAY type of a procedure in an external library module, if the CARRAY and ARRAY element types are _assignment compatible_; as an extension to this rule, an ARRAY of an unstructured type or a string literal is compatible with a CPOINTER TO VOID. The compiler or runtime system in use is free to either create a CARRAY copy of the ARRAY or string literal, or to directly pass the memory address for efficiency reasons; in the latter case the compiler or runtime system assure that the memory address remains valid during the call.
+
+[NOTE]
+Remember that taking the address of a variable is a potentially unsafe operation because the memory location the address points to could become invalid.
 
 [appendix]
 == Definition of terms
@@ -1556,6 +1656,9 @@ DeclarationSequence2 =
 	| VAR { VariableDeclaration [';'] }
 	| ProcedureHeading [';'] } 
 ....
+
+[NOTE]
+The <<Foreign Function Interface>> syntax is not included here.
 
 [appendix]
 == More Code Examples
