@@ -17,7 +17,7 @@
     <div class="details">
       <span id="author" class="author">Rochus Keller</span><br>
       <span id="email" class="email"><a href="mailto:me@rochus-keller.ch">me@rochus-keller.ch</a></span><br>
-      <span id="revdate">2021-11-07</span>
+      <span id="revdate">2021-12-30</span>
       <br><span id="revremark">work in progress</span>
     </div>
     <div id="toc" class="toc2">
@@ -1398,7 +1398,7 @@ ExpList    = expression {',' expression}</pre>
           <div class="olist arabic">
             <ol class="arabic">
               <li>
-                <p><code>v</code> is a variable parameter of record type or <code>v</code>                  is a pointer, and if</p>
+                <p><code>v</code> is a variable parameter of record type or <code>v</code>                  is a pointer to record type, and if</p>
               </li>
               <li>
                 <p>T is an extension of the static type of <code>v</code>.</p>
@@ -1758,7 +1758,34 @@ t is CenterTree        // boolean</pre>
             </div>
           </div>
           <div class="sect3">
-            <h4 id="_function_call">8.2.5. Function Call</h4>
+            <h4 id="_string_operators">8.2.5. String operators</h4>
+            <table class="tableblock frame-all grid-all" style="width: 50%;">
+              <colgroup>
+                <col style="width: 25%;">
+                <col style="width: 75%;">
+              </colgroup>
+              <tbody>
+                <tr>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">+</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">concatenation</p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="paragraph">
+              <p>The concatenation operator applies to operands of string types (literals
+                as well as char or wchar arrays). The resulting string consists of
+                the characters of the first operand followed by the characters of
+                the second operand. If a char string (literal or char array) is concatenated
+                with a wchar string (literal or wchar array) the result is a wchar
+                string.</p>
+            </div>
+          </div>
+          <div class="sect3">
+            <h4 id="_function_call">8.2.6. Function Call</h4>
             <div class="paragraph">
               <p>A function call is a factor in an expression. In contrast to <a href="#_procedure_calls">Procedure calls</a>                in a function call the actual parameter list is mandatory. Each expression
                 in the actual parameters list (if any) is used to initialize a corresponding
@@ -1946,11 +1973,12 @@ end</pre>
               according to the value of an expression. First the case expression
               is evaluated, then that statement sequence is executed whose case label
               list contains the obtained value. The case expression must either be
-              of an integer type that includes the types of all case labels, or both
-              the case expression and the case labels must be of type CHAR. Case
-              labels are constants, and no value must occur more than once. If the
-              value of the expression does not occur as a label of any case, the
-              statement sequence following the symbol ELSE is selected, if there
+              of an integer type that includes the types of all case labels, or an
+              enumeration type with all case labels being valid members of this type,
+              or both the case expression and the case labels must be of type CHAR.
+              Case labels are constants, and no value must occur more than once.
+              If the value of the expression does not occur as a label of any case,
+              the statement sequence following the symbol ELSE is selected, if there
               is one, otherwise the program is aborted.</p>
           </div>
           <div class="paragraph">

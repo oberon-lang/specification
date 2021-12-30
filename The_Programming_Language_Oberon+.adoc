@@ -11,7 +11,7 @@
 = The Programming Language Oberon+
 :author: Rochus Keller 
 :email: me@rochus-keller.ch
-:revdate: 2021-11-07
+:revdate: 2021-12-30
 :revremark: work in progress
 :doctype: article 
 :listing-caption: Listing
@@ -564,7 +564,7 @@ If `a` or `r` are read-only, then also `a[e]` and `r.f` are read-only.
 
 A type guard `v(T)` asserts that the dynamic type of `v` is T (or an extension of T), i.e. program execution is aborted, if the dynamic type of `v` is not T (or an extension of T). Within the designator, `v` is then regarded as having the static type T. The guard is applicable, if
 
-. `v` is a variable parameter of record type or `v` is a pointer, and if
+. `v` is a variable parameter of record type or `v` is a pointer to record type, and if
 . T is an extension of the static type of `v`. 
 
 If the designated object is a constant or a variable, then the designator refers to its current value. If it is a procedure, the designator refers to that procedure unless it is followed by a (possibly empty) parameter list in which case it implies an activation of that procedure and stands for the value resulting from its execution. The actual parameters must correspond to the formal parameters as in proper procedure calls (see <<Formal parameters>>).
@@ -685,6 +685,15 @@ w[i].name <= "John"    // boolean
 t is CenterTree        // boolean
 ....
 
+==== String operators
+
+[width=50%,cols="1,3"]
+|======================================
+| +  |   concatenation
+|======================================
+
+The concatenation operator applies to operands of string types (literals as well as char or wchar arrays). The resulting string consists of the characters of the first operand followed by the characters of the second operand. If a char string (literal or char array) is concatenated with a wchar string (literal or wchar array) the result is a wchar string.
+
 ==== Function Call
 A function call is a factor in an expression. In contrast to <<Procedure calls>> in a function call the actual parameter list is mandatory. Each expression in the actual parameters list (if any) is used to initialize a corresponding formal parameter. The number of expressions in the actual parameter list must correspond the number of formal parameters. See also <<Formal parameters>>.
 
@@ -782,7 +791,7 @@ end
 ....
 
 === Case statements
-Case statements specify the selection and execution of a statement sequence according to the value of an expression. First the case expression is evaluated, then that statement sequence is executed whose case label list contains the obtained value. The case expression must either be of an integer type that includes the types of all case labels, or both the case expression and the case labels must be of type CHAR. Case labels are constants, and no value must occur more than once. If the value of the expression does not occur as a label of any case, the statement sequence following the symbol ELSE is selected, if there is one, otherwise the program is aborted.
+Case statements specify the selection and execution of a statement sequence according to the value of an expression. First the case expression is evaluated, then that statement sequence is executed whose case label list contains the obtained value. The case expression must either be of an integer type that includes the types of all case labels, or an enumeration type with all case labels being valid members of this type, or both the case expression and the case labels must be of type CHAR. Case labels are constants, and no value must occur more than once. If the value of the expression does not occur as a label of any case, the statement sequence following the symbol ELSE is selected, if there is one, otherwise the program is aborted.
 
 The type T of the case expression (case variable) may also be a record or pointer type. Then the case labels must be extensions of T, and in the statements S~i~ labelled by T~i~, the case variable is considered as of type T~i~.
 
