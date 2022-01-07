@@ -17,7 +17,7 @@
     <div class="details">
       <span id="author" class="author">Rochus Keller</span><br>
       <span id="email" class="email"><a href="mailto:me@rochus-keller.ch">me@rochus-keller.ch</a></span><br>
-      <span id="revdate">2021-12-30</span>
+      <span id="revdate">2022-01-06</span>
       <br><span id="revremark">work in progress</span>
     </div>
     <div id="toc" class="toc2">
@@ -274,7 +274,9 @@ firstLetter</pre>
               constant is the minimal type to which the constant value belongs (see
               <a href="#_basic_types">Basic types</a>). If the constant is specified
               with the suffix <code>H</code> (or <code>h</code>), the representation
-              is hexadecimal otherwise the representation is decimal.</p>
+              is hexadecimal otherwise the representation is decimal. If a decimal
+              or hexadecimal constant is specified with the suffix <code>I</code>              (or <code>i</code>), then the type is at least <code>INTEGER</code>.
+              If a decimal or hexadecimal constant is specified with the suffix <code>L</code>              (or <code>l</code>), then the type is at least <code>LONGINT</code>.</p>
           </div>
           <div class="paragraph">
             <p>A real number always contains a decimal point and at least one digit
@@ -288,7 +290,7 @@ firstLetter</pre>
             <div class="title">Syntax:</div>
             <div class="content">
               <pre>number   = integer | real
-integer  = digit {digit} | digit {hexDigit} ('H' | 'h')
+integer  = ( digit {digit} | digit {hexDigit} ('H' | 'h') ) ['L' | 'l' | 'I' | 'i']
 real     = digit {digit} '.' {digit} [Exponent]
 Exponent = ('E' | 'e' | 'D' | 'd') ['+' | '-'] digit {digit}
 hexDigit = digit | 'A' ... 'F' | 'a' ... 'f'
@@ -733,22 +735,33 @@ identdef  = ident ['*' | '-']</pre>
             </tr>
             <tr>
               <td class="tableblock halign-left valign-top">
+                <p class="tableblock">BITSHL</p>
+              </td>
+              <td class="tableblock halign-left valign-top">
+                <p class="tableblock">BITSHR</p>
+              </td>
+              <td class="tableblock halign-left valign-top">
                 <p class="tableblock">BITXOR</p>
               </td>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">BOOLEAN</p>
               </td>
+            </tr>
+            <tr>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">BYTE</p>
               </td>
               <td class="tableblock halign-left valign-top">
+                <p class="tableblock">CAST</p>
+              </td>
+              <td class="tableblock halign-left valign-top">
                 <p class="tableblock">CAP</p>
               </td>
-            </tr>
-            <tr>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">CHAR</p>
               </td>
+            </tr>
+            <tr>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">CHR</p>
               </td>
@@ -758,11 +771,11 @@ identdef  = ident ['*' | '-']</pre>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">DEC</p>
               </td>
-            </tr>
-            <tr>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">DEFAULT</p>
               </td>
+            </tr>
+            <tr>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">ENTIER</p>
               </td>
@@ -772,11 +785,11 @@ identdef  = ident ['*' | '-']</pre>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">FLOOR</p>
               </td>
-            </tr>
-            <tr>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">FLT</p>
               </td>
+            </tr>
+            <tr>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">HALT</p>
               </td>
@@ -786,11 +799,11 @@ identdef  = ident ['*' | '-']</pre>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">INCL</p>
               </td>
-            </tr>
-            <tr>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">INT</p>
               </td>
+            </tr>
+            <tr>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">INTEGER</p>
               </td>
@@ -800,11 +813,11 @@ identdef  = ident ['*' | '-']</pre>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">LONG</p>
               </td>
-            </tr>
-            <tr>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">LONGINT</p>
               </td>
+            </tr>
+            <tr>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">LONGREAL</p>
               </td>
@@ -814,11 +827,11 @@ identdef  = ident ['*' | '-']</pre>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">MAX</p>
               </td>
-            </tr>
-            <tr>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">MIN</p>
               </td>
+            </tr>
+            <tr>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">NEW</p>
               </td>
@@ -828,11 +841,11 @@ identdef  = ident ['*' | '-']</pre>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">ORD</p>
               </td>
-            </tr>
-            <tr>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">PACK</p>
               </td>
+            </tr>
+            <tr>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">REAL</p>
               </td>
@@ -842,11 +855,11 @@ identdef  = ident ['*' | '-']</pre>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">SET</p>
               </td>
-            </tr>
-            <tr>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">SHORT</p>
               </td>
+            </tr>
+            <tr>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">SHORTINT</p>
               </td>
@@ -856,16 +869,9 @@ identdef  = ident ['*' | '-']</pre>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">UNPK</p>
               </td>
-            </tr>
-            <tr>
-              <td class="tableblock halign-left valign-top">
-                <p class="tableblock">VAL</p>
-              </td>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">WCHR</p>
               </td>
-              <td class="tableblock halign-left valign-top"></td>
-              <td class="tableblock halign-left valign-top"></td>
             </tr>
           </tbody>
         </table>
@@ -1292,7 +1298,7 @@ end</pre>
           </div>
           <div class="paragraph">
             <p>The ordinal number of an enumeration identifier can be obtained using
-              the <code>ORD</code> predeclared function procedure. <code>VAL</code>              is the reverse operation. <code>MIN</code> returns the first and <code>MAX</code>              the last ident of the enumeration. <code>INC</code> returns the next
+              the <code>ORD</code> predeclared function procedure. <code>CAST</code>              is the reverse operation. <code>MIN</code> returns the first and <code>MAX</code>              the last ident of the enumeration. <code>INC</code> returns the next
               and <code>DEC</code> the previous ident. If T is an enumeration type
               then <code>INC(MAX(T))</code> and <code>DEC(MIN(T))</code> are undefined
               and terminate the program.</p>
@@ -2591,34 +2597,6 @@ end Insert</pre>
                 </tr>
                 <tr>
                   <td class="tableblock halign-left valign-top">
-                    <p class="tableblock">ASH(x, n)</p>
-                  </td>
-                  <td class="tableblock halign-left valign-top">
-                    <p class="tableblock">x, n: INTEGER</p>
-                  </td>
-                  <td class="tableblock halign-left valign-top">
-                    <p class="tableblock">INTEGER</p>
-                  </td>
-                  <td class="tableblock halign-left valign-top">
-                    <p class="tableblock">arithmetic shift (x * 2<sup>n</sup>)</p>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="tableblock halign-left valign-top">
-                    <p class="tableblock">ASR(x, n)</p>
-                  </td>
-                  <td class="tableblock halign-left valign-top">
-                    <p class="tableblock">x, n: INTEGER</p>
-                  </td>
-                  <td class="tableblock halign-left valign-top">
-                    <p class="tableblock">INTEGER</p>
-                  </td>
-                  <td class="tableblock halign-left valign-top">
-                    <p class="tableblock">signed shift right, x DIV 2<sup>n</sup></p>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="tableblock halign-left valign-top">
                     <p class="tableblock">CAP(x)</p>
                   </td>
                   <td class="tableblock halign-left valign-top">
@@ -2646,13 +2624,28 @@ end Insert</pre>
                     <p class="tableblock">BITAND(x,y)</p>
                   </td>
                   <td class="tableblock halign-left valign-top">
-                    <p class="tableblock">x, y: INTEGER</p>
+                    <p class="tableblock">x, y: INTEGER or LONGINT</p>
                   </td>
                   <td class="tableblock halign-left valign-top">
-                    <p class="tableblock">INTEGER</p>
+                    <p class="tableblock">INTEGER or LONGINT</p>
                   </td>
                   <td class="tableblock halign-left valign-top">
-                    <p class="tableblock">bitwise AND</p>
+                    <p class="tableblock">bitwise AND; result is LONGINT if x or y is LONGINT, else INTEGER</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">BITASR(x,n)</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">x: INTEGER or LONGINT, n: INTEGER</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">INTEGER or LONGINT</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">arithmetic shift right by n bits, where n &gt;= 0 and n &lt;
+                      SIZE(x)*8; result is LONGINT if x is LONGINT, else INTEGER</p>
                   </td>
                 </tr>
                 <tr>
@@ -2660,13 +2653,13 @@ end Insert</pre>
                     <p class="tableblock">BITNOT(x)</p>
                   </td>
                   <td class="tableblock halign-left valign-top">
-                    <p class="tableblock">x: INTEGER</p>
+                    <p class="tableblock">x: INTEGER or LONGINT</p>
                   </td>
                   <td class="tableblock halign-left valign-top">
-                    <p class="tableblock">INTEGER</p>
+                    <p class="tableblock">INTEGER or LONGINT</p>
                   </td>
                   <td class="tableblock halign-left valign-top">
-                    <p class="tableblock">bitwise NOT</p>
+                    <p class="tableblock">bitwise NOT; result is LONGINT if x or y is LONGINT, else INTEGER</p>
                   </td>
                 </tr>
                 <tr>
@@ -2674,13 +2667,13 @@ end Insert</pre>
                     <p class="tableblock">BITOR(x,y)</p>
                   </td>
                   <td class="tableblock halign-left valign-top">
-                    <p class="tableblock">x, y: INTEGER</p>
+                    <p class="tableblock">x, y: INTEGER or LONGINT</p>
                   </td>
                   <td class="tableblock halign-left valign-top">
-                    <p class="tableblock">INTEGER</p>
+                    <p class="tableblock">INTEGER or LONGINT</p>
                   </td>
                   <td class="tableblock halign-left valign-top">
-                    <p class="tableblock">bitwise OR</p>
+                    <p class="tableblock">bitwise OR; result is LONGINT if x or y is LONGINT, else INTEGER</p>
                   </td>
                 </tr>
                 <tr>
@@ -2701,16 +2694,84 @@ end Insert</pre>
                 </tr>
                 <tr>
                   <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">BITSHL(x,n)</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">x: INTEGER or LONGINT, n: INTEGER</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">INTEGER or LONGINT</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">logical shift left by n bits, where n &gt;= 0 and n &lt; SIZE(x)*8;
+                      result is LONGINT if x is LONGINT, else INTEGER</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">BITSHR(x,n)</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">x: INTEGER or LONGINT, n: INTEGER</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">INTEGER or LONGINT</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">logical shift right by n bits, where n &gt;= 0 and n &lt; SIZE(x)*8;
+                      result is LONGINT if x is LONGINT, else INTEGER</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="tableblock halign-left valign-top">
                     <p class="tableblock">BITXOR(x,y)</p>
                   </td>
                   <td class="tableblock halign-left valign-top">
-                    <p class="tableblock">x, y: INTEGER</p>
+                    <p class="tableblock">x, y: INTEGER or LONGINT</p>
                   </td>
                   <td class="tableblock halign-left valign-top">
-                    <p class="tableblock">INTEGER</p>
+                    <p class="tableblock">INTEGER or LONGINT</p>
                   </td>
                   <td class="tableblock halign-left valign-top">
-                    <p class="tableblock">bitwise XOR</p>
+                    <p class="tableblock">bitwise XOR; result is LONGINT if x or y is LONGINT, else INTEGER</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">CAST(T,x)</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">T:enumeration type x:ordinal number</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">enumeration type</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">the enum item with the ordinal number x; halt if no match</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="tableblock halign-left valign-top"></td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">T,x: integer type</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">T</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">convert integer types, accept possible loss of information</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="tableblock halign-left valign-top"></td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">T, x: cpointer to cstruct or void</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">T</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">unsafe cast of a C pointer (see <a href="#_c_types">C Types</a>)</p>
                   </td>
                 </tr>
                 <tr>
@@ -2780,40 +2841,62 @@ end Insert</pre>
                 </tr>
                 <tr>
                   <td class="tableblock halign-left valign-top">
-                    <p class="tableblock">ENTIER(x)</p>
-                  </td>
-                  <td class="tableblock halign-left valign-top">
-                    <p class="tableblock">real type</p>
-                  </td>
-                  <td class="tableblock halign-left valign-top">
-                    <p class="tableblock">LONGINT</p>
-                  </td>
-                  <td class="tableblock halign-left valign-top">
-                    <p class="tableblock">largest integer not greater than x</p>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="tableblock halign-left valign-top">
                     <p class="tableblock">FLOOR(x)</p>
                   </td>
-                  <td class="tableblock halign-left valign-top"></td>
                   <td class="tableblock halign-left valign-top">
-                    <p class="tableblock">INTEGER</p>
+                    <p class="tableblock">x: REAL or LONGREAL</p>
                   </td>
-                  <td class="tableblock halign-left valign-top"></td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">INTEGER or LONGINT</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">largest integer not greater than x; result is LONGINT if x is
+                      LONGREAL, else INTEGER</p>
+                  </td>
                 </tr>
                 <tr>
                   <td class="tableblock halign-left valign-top">
                     <p class="tableblock">FLT(x)</p>
                   </td>
                   <td class="tableblock halign-left valign-top">
-                    <p class="tableblock">INTEGER</p>
+                    <p class="tableblock">x: INTEGER or LONGINT</p>
                   </td>
                   <td class="tableblock halign-left valign-top">
-                    <p class="tableblock">REAL</p>
+                    <p class="tableblock">REAL or LONGREAL</p>
                   </td>
                   <td class="tableblock halign-left valign-top">
-                    <p class="tableblock">identity</p>
+                    <p class="tableblock">Convert integer to real type; result is LONGREAL if x was LONGINT,
+                      else REAL</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">LDCMD(m,c)</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">m,c: string</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">PROCEDURE</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">dynamically loads the command procedure with name c from the
+                      Oberon+ module with name m; returns NIL if not successful</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">LDMOD(n)</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">n: string</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">BOOLEAN</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">dynamically loads the Oberon+ module with the given name n; returns
+                      TRUE if successful</p>
                   </td>
                 </tr>
                 <tr>
@@ -2821,7 +2904,7 @@ end Insert</pre>
                     <p class="tableblock">LEN(v, n)</p>
                   </td>
                   <td class="tableblock halign-left valign-top">
-                    <p class="tableblock">v: array n: integer</p>
+                    <p class="tableblock">v: array n: INTEGER</p>
                   </td>
                   <td class="tableblock halign-left valign-top">
                     <p class="tableblock">INTEGER</p>
@@ -2912,20 +2995,6 @@ end Insert</pre>
                   </td>
                   <td class="tableblock halign-left valign-top">
                     <p class="tableblock">projection</p>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="tableblock halign-left valign-top">
-                    <p class="tableblock">LSL(x,n)</p>
-                  </td>
-                  <td class="tableblock halign-left valign-top">
-                    <p class="tableblock">x, n: INTEGER</p>
-                  </td>
-                  <td class="tableblock halign-left valign-top">
-                    <p class="tableblock">INTEGER</p>
-                  </td>
-                  <td class="tableblock halign-left valign-top">
-                    <p class="tableblock">logical shift left, x * 2<sup>n</sup></p>
                   </td>
                 </tr>
                 <tr>
@@ -3128,20 +3197,6 @@ end Insert</pre>
                 </tr>
                 <tr>
                   <td class="tableblock halign-left valign-top">
-                    <p class="tableblock">ROR(x, n)</p>
-                  </td>
-                  <td class="tableblock halign-left valign-top">
-                    <p class="tableblock">x, n: INTEGER</p>
-                  </td>
-                  <td class="tableblock halign-left valign-top">
-                    <p class="tableblock">INTEGER</p>
-                  </td>
-                  <td class="tableblock halign-left valign-top">
-                    <p class="tableblock">x rotated right by n bits</p>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="tableblock halign-left valign-top">
                     <p class="tableblock">SHORT(x)</p>
                   </td>
                   <td class="tableblock halign-left valign-top">
@@ -3216,7 +3271,7 @@ end Insert</pre>
                 </tr>
                 <tr>
                   <td class="tableblock halign-left valign-top">
-                    <p class="tableblock">BYTESIZE(T)</p>
+                    <p class="tableblock">SIZE(T)</p>
                   </td>
                   <td class="tableblock halign-left valign-top">
                     <p class="tableblock">any type</p>
@@ -3233,7 +3288,7 @@ end Insert</pre>
                     <p class="tableblock">STRLEN(s)</p>
                   </td>
                   <td class="tableblock halign-left valign-top">
-                    <p class="tableblock">s: array of char</p>
+                    <p class="tableblock">s: array of char or wchar</p>
                   </td>
                   <td class="tableblock halign-left valign-top">
                     <p class="tableblock">INTEGER</p>
@@ -3246,24 +3301,10 @@ end Insert</pre>
                 <tr>
                   <td class="tableblock halign-left valign-top"></td>
                   <td class="tableblock halign-left valign-top">
-                    <p class="tableblock">s: string</p>
+                    <p class="tableblock">s: string literal</p>
                   </td>
                   <td class="tableblock halign-left valign-top"></td>
                   <td class="tableblock halign-left valign-top"></td>
-                </tr>
-                <tr>
-                  <td class="tableblock halign-left valign-top">
-                    <p class="tableblock">VAL(T,x)</p>
-                  </td>
-                  <td class="tableblock halign-left valign-top">
-                    <p class="tableblock">T:enumeration type x:ordinal number</p>
-                  </td>
-                  <td class="tableblock halign-left valign-top">
-                    <p class="tableblock">enumeration type</p>
-                  </td>
-                  <td class="tableblock halign-left valign-top">
-                    <p class="tableblock">the value with the ordinal number x.</p>
-                  </td>
                 </tr>
                 <tr>
                   <td class="tableblock halign-left valign-top">
@@ -3277,6 +3318,100 @@ end Insert</pre>
                   </td>
                   <td class="tableblock halign-left valign-top">
                     <p class="tableblock">Unicode BMP character with ordinal number x</p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="sect3">
+            <h4 id="_deprecated_predeclared_functions_for_backward_compatibility">10.4.2. Deprecated predeclared functions for backward compatibility</h4>
+            <table class="tableblock frame-all grid-all spread">
+              <colgroup>
+                <col style="width: 12.5%;">
+                <col style="width: 25%;">
+                <col style="width: 25%;">
+                <col style="width: 37.5%;">
+              </colgroup>
+              <thead>
+                <tr>
+                  <th class="tableblock halign-left valign-top">Name</th>
+                  <th class="tableblock halign-left valign-top">Argument type</th>
+                  <th class="tableblock halign-left valign-top">Result type</th>
+                  <th class="tableblock halign-left valign-top">Function</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">ASH(x, n)</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">x: INTEGER or LONGINT, n: INTEGER</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">INTEGER or LONGINT</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">Same as LSL(x,n) for positive n, same as ASR(x,-n) for negative
+                      n</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">ASR(x, n)</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">x: INTEGER or LONGINT, n: INTEGER</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">INTEGER or LONGINT</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">signed shift right, x DIV 2<sup>n_MOD_w</sup>, with w bitwidth
+                      of x; result is LONGINT if x is LONGINT, else INTEGER</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">ENTIER(x)</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">real type</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">LONGINT</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">largest integer not greater than x</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">LSL(x,n)</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">x: INTEGER or LONGINT, n: INTEGER</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">INTEGER or LONGINT</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">logical shift left, x * 2<sup>n_MOD_w</sup>, with w bitwidth
+                      of x; result is LONGINT if x is LONGINT, else INTEGER</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">ROR(x, n)</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">x, n: INTEGER</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">INTEGER</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">x rotated right by n bits</p>
                   </td>
                 </tr>
               </tbody>
@@ -3308,14 +3443,18 @@ end Insert</pre>
                     <div class="title">Note</div>
                   </td>
                   <td class="content">
-                    The function BYTESIZE(T) is called SIZE(T) in Oberon-2.
+                    The Oberon and Oberon-2 built-in function ASH was replaced by ASR, LSL and ROR in
+                    Oberon-07; note that ASR(x,-n) gives not the same result as LSL(x,n)
+                    for a given n. LSL(x,n) with positive n is identical to BITSHL(x,n),
+                    and ASR(x,n) with positive n is identical to BITASR(x,n). ROR(x,n)
+                    with positive n is identical to BITSHR(x,n).
                   </td>
                 </tr>
               </table>
             </div>
           </div>
           <div class="sect3">
-            <h4 id="_predeclared_proper_procedures">10.4.2. Predeclared proper procedures</h4>
+            <h4 id="_predeclared_proper_procedures">10.4.3. Predeclared proper procedures</h4>
             <table class="tableblock frame-all grid-all spread">
               <colgroup>
                 <col style="width: 16.6666%;">
@@ -3356,24 +3495,6 @@ end Insert</pre>
                   <td class="tableblock halign-left valign-top"></td>
                   <td class="tableblock halign-left valign-top">
                     <p class="tableblock">n: integer constant</p>
-                  </td>
-                  <td class="tableblock halign-left valign-top"></td>
-                </tr>
-                <tr>
-                  <td class="tableblock halign-left valign-top">
-                    <p class="tableblock">COPY(x, v)</p>
-                  </td>
-                  <td class="tableblock halign-left valign-top">
-                    <p class="tableblock">x: CHAR array, string</p>
-                  </td>
-                  <td class="tableblock halign-left valign-top">
-                    <p class="tableblock">v := x</p>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="tableblock halign-left valign-top"></td>
-                  <td class="tableblock halign-left valign-top">
-                    <p class="tableblock">v: CHAR array</p>
                   </td>
                   <td class="tableblock halign-left valign-top"></td>
                 </tr>
@@ -3510,6 +3631,56 @@ end Insert</pre>
                     <p class="tableblock">x<sub>0</sub>..x<sub>n</sub></p>
                   </td>
                 </tr>
+              </tbody>
+            </table>
+            <div class="paragraph">
+              <p>In <code>ASSERT(x, n)</code> and <code>HALT(n)</code>, the interpretation
+                of <code>n</code> is left to the underlying system implementation.</p>
+            </div>
+            <div class="paragraph">
+              <p>The predeclared procedure NEW is used to allocate data blocks in free
+                memory. There is, however, no way to explicitly dispose an allocated
+                block. Rather, the Oberon+ runtime uses a garbage collector to find
+                the blocks that are not used any more and to make them available
+                for allocation again. A block is in use as long as it can be reached
+                from a global pointer variable via a pointer chain. Cutting this
+                chain (e.g., setting a pointer to NIL) makes the block collectable.</p>
+            </div>
+          </div>
+          <div class="sect3">
+            <h4 id="_deprecated_predeclared_proper_procedures_for_backward_compatibility">10.4.4. Deprecated predeclared proper procedures for backward compatibility</h4>
+            <table class="tableblock frame-all grid-all spread">
+              <colgroup>
+                <col style="width: 16.6666%;">
+                <col style="width: 33.3333%;">
+                <col style="width: 50.0001%;">
+              </colgroup>
+              <thead>
+                <tr>
+                  <th class="tableblock halign-left valign-top">Name</th>
+                  <th class="tableblock halign-left valign-top">Argument types</th>
+                  <th class="tableblock halign-left valign-top">Function</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">COPY(x, v)</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">x: CHAR array, string</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">v := x</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="tableblock halign-left valign-top"></td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">v: CHAR array</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top"></td>
+                </tr>
                 <tr>
                   <td class="tableblock halign-left valign-top">
                     <p class="tableblock">PACK(x, n)</p>
@@ -3545,19 +3716,6 @@ end Insert</pre>
                 terminating 0X to another CHAR array. If necessary, the assigned
                 value is truncated to the target length minus one. The target will
                 always contain 0X as a terminator.</p>
-            </div>
-            <div class="paragraph">
-              <p>In <code>ASSERT(x, n)</code> and <code>HALT(n)</code>, the interpretation
-                of <code>n</code> is left to the underlying system implementation.</p>
-            </div>
-            <div class="paragraph">
-              <p>The predeclared procedure NEW is used to allocate data blocks in free
-                memory. There is, however, no way to explicitly dispose an allocated
-                block. Rather, the Oberon+ runtime uses a garbage collector to find
-                the blocks that are not used any more and to make them available
-                for allocation again. A block is in use as long as it can be reached
-                from a global pointer variable via a pointer chain. Cutting this
-                chain (e.g., setting a pointer to NIL) makes the block collectable.</p>
             </div>
           </div>
         </div>
@@ -3927,7 +4085,8 @@ DeclarationSequence3 =
               it is perfectly legal to use C_Types as formal parameter, or local
               or module variable types in regular Oberon+ modules. CPOINTER (but
               not structured C_Types) can be used as field or element type in RECORD
-              or ARRAY.</p>
+              or ARRAY. Structured C_Types (in contrast to CPOINTER to structured
+              C_Types) cannot be used as formal VAR or IN parameters.</p>
           </div>
           <div class="paragraph">
             <p>POINTER and CPOINTER are disjoint in what they can point to and it is
@@ -4020,7 +4179,7 @@ DeclarationSequence3 =
             <ul>
               <li>
                 <p>when passing an actual value of this type to a formal parameter of
-                  CPOINTER type of a procedure in an external library module,</p>
+                  CPOINTER type,</p>
               </li>
               <li>
                 <p>and when assigning a value of this type to a variable of CPOINTER

@@ -11,7 +11,7 @@
 = The Programming Language Oberon+
 :author: Rochus Keller 
 :email: me@rochus-keller.ch
-:revdate: 2021-12-30
+:revdate: 2022-01-06
 :revremark: work in progress
 :doctype: article 
 :listing-caption: Listing
@@ -108,14 +108,14 @@ firstLetter
 ....
 
 === Numbers
-Numbers are (unsigned) integer or real constants. The type of an integer constant is the minimal type to which the constant value belongs (see <<Basic types>>). If the constant is specified with the suffix `H` (or `h`), the representation is hexadecimal otherwise the representation is decimal.
+Numbers are (unsigned) integer or real constants. The type of an integer constant is the minimal type to which the constant value belongs (see <<Basic types>>). If the constant is specified with the suffix `H` (or `h`), the representation is hexadecimal otherwise the representation is decimal. If a decimal or hexadecimal constant is specified with the suffix `I` (or `i`), then the type is at least `INTEGER`. If a decimal or hexadecimal constant is specified with the suffix `L` (or `l`), then the type is at least `LONGINT`.
 
 A real number always contains a decimal point and at least one digit before the point. Optionally it may also contain a decimal scale factor. The letter `E` or `D` (or `e` or `d`) means _times ten to the power of_. A real number is of type `REAL`, unless it has a scale factor containing the letter D. In this case it is of type `LONGREAL`.
 
 .Syntax:
 ....
 number   = integer | real
-integer  = digit {digit} | digit {hexDigit} ('H' | 'h')
+integer  = ( digit {digit} | digit {hexDigit} ('H' | 'h') ) ['L' | 'l' | 'I' | 'i']
 real     = digit {digit} '.' {digit} [Exponent]
 Exponent = ('E' | 'e' | 'D' | 'd') ['+' | '-'] digit {digit}
 hexDigit = digit | 'A' ... 'F' | 'a' ... 'f'
@@ -272,9 +272,12 @@ The following identifiers are predeclared; their meaning is defined in the indic
 |BITNOT
 |BITOR
 |BITS
+|BITSHL
+|BITSHR
 |BITXOR
 |BOOLEAN  
-|BYTE     
+|BYTE  
+|CAST   
 |CAP      
 |CHAR     
 |CHR      
@@ -308,7 +311,6 @@ The following identifiers are predeclared; their meaning is defined in the indic
 |SHORTINT 
 |SIZE 
 |UNPK     
-|VAL
 |WCHR
 |
 |
@@ -513,7 +515,7 @@ enumeration = '('  ident { [','] ident } ')'
 (Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday)
 ....
 
-The ordinal number of an enumeration identifier can be obtained using the `ORD` predeclared function procedure. `VAL` is the reverse operation. `MIN` returns the first and `MAX` the last ident of the enumeration. `INC` returns the next and `DEC` the previous ident. If T is an enumeration type then `INC(MAX(T))` and `DEC(MIN(T))` are undefined and terminate the program.
+The ordinal number of an enumeration identifier can be obtained using the `ORD` predeclared function procedure. `CAST` is the reverse operation. `MIN` returns the first and `MAX` the last ident of the enumeration. `INC` returns the next and `DEC` the previous ident. If T is an enumeration type then `INC(MAX(T))` and `DEC(MIN(T))` are undefined and terminate the program.
 
 
 == Variable declarations
@@ -1128,24 +1130,29 @@ The following table lists the predeclared procedures. Some are generic procedure
 |===
 |Name        |Argument type        |Result type    |Function
 |ABS(x)      |numeric type         |type of x      |absolute value
-|ASH(x, n)   |x, n: INTEGER        |INTEGER        |arithmetic shift (x * 2^n^)
-|ASR(x, n)   |x, n: INTEGER        |INTEGER        |signed shift right, x DIV 2^n^
 |CAP(x)      |CHAR                 |CHAR           |x is letter: corresponding capital letter
 |            |WCHAR                |WCHAR          |
-|BITAND(x,y) |x, y: INTEGER        |INTEGER        |bitwise AND
-|BITNOT(x)   |x: INTEGER           |INTEGER        |bitwise NOT
-|BITOR(x,y)  |x, y: INTEGER        |INTEGER        |bitwise OR
+|BITAND(x,y) |x, y: INTEGER or LONGINT|INTEGER or LONGINT|bitwise AND; result is LONGINT if x or y is LONGINT, else INTEGER
+|BITASR(x,n) |x: INTEGER or LONGINT, n: INTEGER|INTEGER or LONGINT|arithmetic shift right by n bits, where n >= 0 and n < SIZE(x)*8; result is LONGINT if x is LONGINT, else INTEGER
+|BITNOT(x)   |x: INTEGER or LONGINT|INTEGER or LONGINT|bitwise NOT; result is LONGINT if x or y is LONGINT, else INTEGER
+|BITOR(x,y)  |x, y: INTEGER or LONGINT|INTEGER or LONGINT|bitwise OR; result is LONGINT if x or y is LONGINT, else INTEGER
 |BITS(x)	 |x: INTEGER		   |SET			   |set corresponding to the integer; the first element corresponds to the least significant digit of the integer and the last element to the most significant digit. 
-|BITXOR(x,y) |x, y: INTEGER        |INTEGER        |bitwise XOR
+|BITSHL(x,n) |x: INTEGER or LONGINT, n: INTEGER|INTEGER or LONGINT|logical shift left by n bits, where n >= 0 and n < SIZE(x)*8; result is LONGINT if x is LONGINT, else INTEGER
+|BITSHR(x,n) |x: INTEGER or LONGINT, n: INTEGER|INTEGER or LONGINT|logical shift right by n bits, where n >= 0 and n < SIZE(x)*8; result is LONGINT if x is LONGINT, else INTEGER
+|BITXOR(x,y) |x, y: INTEGER or LONGINT|INTEGER or LONGINT|bitwise XOR; result is LONGINT if x or y is LONGINT, else INTEGER
+|CAST(T,x)	 |T:enumeration type x:ordinal number|enumeration type|the enum item with the ordinal number x; halt if no match
+|			 |T,x: integer type    |T              |convert integer types, accept possible loss of information
+|			 |T, x: cpointer to cstruct or void|T  |unsafe cast of a C pointer (see <<C Types>>)
 |CHR(x)      |integer type         |CHAR           |Latin-1 character with ordinal number x
 |DEFAULT(T)  |T = basic type       |T              |zero for numeric and character types, false for boolean, empty set
 |            |T = enumeration type |T              |same as MIN(T)
 |            |T = pointer/proc type|T              |nil
 |            |T = record/array type|T              |all fields/elements set to their DEFAULT type
-|ENTIER(x)   |real type            |LONGINT        |largest integer not greater than x
-|FLOOR(x)    |                     |INTEGER        |
-|FLT(x)      |INTEGER              |REAL           |identity
-|LEN(v, n)   |v: array n: integer  |INTEGER        |length of v in dimension n (first dimension = 0)
+|FLOOR(x)    |x: REAL or LONGREAL  |INTEGER or LONGINT|largest integer not greater than x; result is LONGINT if x is LONGREAL, else INTEGER
+|FLT(x)      |x: INTEGER or LONGINT|REAL or LONGREAL|Convert integer to real type; result is LONGREAL if x was LONGINT, else REAL
+|LDCMD(m,c)  |m,c: string          |PROCEDURE      |dynamically loads the command procedure with name c from the Oberon+ module with name m; returns NIL if not successful
+|LDMOD(n)    |n: string			   |BOOLEAN        |dynamically loads the Oberon+ module with the given name n; returns TRUE if successful
+|LEN(v, n)   |v: array n: INTEGER  |INTEGER        |length of v in dimension n (first dimension = 0)
 |LEN(v)      |v: array             |INTEGER        |equivalent to LEN(v, 0)
 |            |v: string            |INTEGER        |length of string (including the terminating 0X)
 |LONG(x)     |x: SHORTINT          |INTEGER        |identity
@@ -1153,7 +1160,6 @@ The following table lists the predeclared procedures. Some are generic procedure
 |            |x: REAL              |LONGREAL	   |
 |            |x: CHAR			   |WCHAR		   |projection 
 |			 |x: array of char or Latin-1 string | Unicode string | projection 
-|LSL(x,n)    |x, n: INTEGER        |INTEGER        |logical shift left, x * 2^n^
 |MAX(T)      |T = basic type       |T              |maximum value of type T
 |            |T = SET              |INTEGER        |maximum element of a set
 |            |T = enumeration type |T              |last element of the enumeration
@@ -1169,22 +1175,30 @@ The following table lists the predeclared procedures. Some are generic procedure
 |            |x: enumeration type  |INTEGER        |ordinal number of the given identifier
 |            |x: BOOLEAN           |BYTE           |TRUE = 1, FALSE = 0
 |            |x: set type		   |INTEGER		   |number representing the set; the first element corresponds to the least significant digit of the number and the last element to the most significant digit. 
-|ROR(x, n)   |x, n: INTEGER        |INTEGER        |x rotated right by n bits
 |SHORT(x)    |x: LONGINT           |INTEGER        |identity
 |            |x: INTEGER           |SHORTINT       |identity
 |            |x: SHORTINT          |BYTE           |identity
 |            |x: LONGREAL          |REAL           |identity (truncation possible)
 |            |x: WCHAR			   |CHAR		   |projection (0x if there is no projection)
 |			 |x: array of wchar or Unicode string | Latin-1 string | projection ("?" for characters where there is no projection)
-|BYTESIZE(T) |any type             |INTEGER        |number of bytes required by T
-|STRLEN(s)   |s: array of char     |INTEGER        |dynamic length of the string up to and not including the terminating 0X
-|            |s: string            |               |
-|VAL(T,x)	 |T:enumeration type x:ordinal number|enumeration type|the value with the ordinal number x.
-|WCHR(x)      |integer type        |WCHAR          |Unicode BMP character with ordinal number x
+|SIZE(T)     |any type             |INTEGER        |number of bytes required by T
+|STRLEN(s)   |s: array of char or wchar|INTEGER        |dynamic length of the string up to and not including the terminating 0X
+|            |s: string literal    |               |
+|WCHR(x)     |integer type        |WCHAR          |Unicode BMP character with ordinal number x
 |===  
 
-// TODO support both longint and integer for all bit operation functions
-// TODO support longint for other functions such as FLT
+==== Deprecated predeclared functions for backward compatibility
+
+[%header,cols="1,2,2,3"] 
+|===
+|Name        |Argument type        |Result type    |Function
+|ASH(x, n)   |x: INTEGER or LONGINT, n: INTEGER|INTEGER or LONGINT|Same as LSL(x,n) for positive n, same as ASR(x,-n) for negative n
+|ASR(x, n)   |x: INTEGER or LONGINT, n: INTEGER|INTEGER or LONGINT|signed shift right, x DIV 2^n_MOD_w^, with w bitwidth of x; result is LONGINT if x is LONGINT, else INTEGER
+|ENTIER(x)   |real type            |LONGINT        |largest integer not greater than x
+|LSL(x,n)    |x: INTEGER or LONGINT, n: INTEGER|INTEGER or LONGINT|logical shift left, x * 2^n_MOD_w^, with w bitwidth of x; result is LONGINT if x is LONGINT, else INTEGER
+|ROR(x, n)   |x, n: INTEGER        |INTEGER        |x rotated right by n bits
+|===  
+
 
 [NOTE]
 The functions ENTIER(x) or FLOOR(x) round down to the largest integer not greater than x. The functions are identical, but the former is defined in Oberon-2 and the latter in Oberon-07.
@@ -1195,7 +1209,8 @@ FLOOR(1.5) = 1; FLOOR(-1.5) = -2
 ....
 
 [NOTE]
-The function BYTESIZE(T) is called SIZE(T) in Oberon-2.
+The Oberon and Oberon-2 built-in function ASH was replaced by ASR, LSL and ROR in Oberon-07; note that ASR(x,-n) gives not the same result as LSL(x,n) for a given n. LSL(x,n) with positive n is identical to BITSHL(x,n), and ASR(x,n) with positive n is identical to BITASR(x,n). ROR(x,n) with positive n is identical to BITSHR(x,n).
+
 
 
 ==== Predeclared proper procedures
@@ -1206,8 +1221,6 @@ The function BYTESIZE(T) is called SIZE(T) in Oberon-2.
 |ASSERT(x)          |x: Boolean expression         |terminate program execution if not x
 |ASSERT(x, n)       |x: Boolean expression         |terminate program execution if not x
 |                   |n: integer constant           |
-|COPY(x, v)         |x: CHAR array, string    |v := x
-|                   |v: CHAR array            |
 |DEC(v)             |integer type                  |v := v - 1
 |                   |enumeration type              |previous ident in enumeration
 |DEC(v, n)          |v, n: integer type            |v := v - n
@@ -1221,6 +1234,19 @@ The function BYTESIZE(T) is called SIZE(T) in Oberon-2.
 |                   |fixed array                   |
 |NEW(v,x~0~,...,x~n~)   |v: pointer to open array  |allocate v^ with lengths
 |                   |x~i~: integer type              |x~0~..x~n~
+|===
+
+In `ASSERT(x, n)` and `HALT(n)`, the interpretation of `n` is left to the underlying system implementation. 
+
+The predeclared procedure NEW is used to allocate data blocks in free memory. There is, however, no way to explicitly dispose an allocated block. Rather, the Oberon+ runtime uses a garbage collector to find the blocks that are not used any more and to make them available for allocation again. A block is in use as long as it can be reached from a global pointer variable via a pointer chain. Cutting this chain (e.g., setting a pointer to NIL) makes the block collectable.
+
+==== Deprecated predeclared proper procedures for backward compatibility
+
+[%header,cols="1,2,3"] 
+|===
+|Name               |Argument types                |Function
+|COPY(x, v)         |x: CHAR array, string    |v := x
+|                   |v: CHAR array            |
 |PACK(x, n)         |VAR x:REAL; n:INTEGER         |pack x and n into x
 |UNPK(x, n)         |VAR x:REAL; VAR n:INTEGER     |unpack x into x and n
 |===
@@ -1230,9 +1256,6 @@ UNPK is the reverse operation. The resulting `x` is normalized, such that 1.0 \<
 
 COPY allows the assignment of a string or a CHAR array containing a terminating 0X to another CHAR array. If necessary, the assigned value is truncated to the target length minus one. The target will always contain 0X as a terminator. 
 
-In `ASSERT(x, n)` and `HALT(n)`, the interpretation of `n` is left to the underlying system implementation. 
-
-The predeclared procedure NEW is used to allocate data blocks in free memory. There is, however, no way to explicitly dispose an allocated block. Rather, the Oberon+ runtime uses a garbage collector to find the blocks that are not used any more and to make them available for allocation again. A block is in use as long as it can be reached from a global pointer variable via a pointer chain. Cutting this chain (e.g., setting a pointer to NIL) makes the block collectable.
 
 == Modules
 A module is a collection of declarations of constants, types, variables, and procedures, together with a sequence of statements for the purpose of assigning initial values to the variables. A module constitutes a text that is compilable as a unit.
@@ -1419,8 +1442,8 @@ In Oberon+ POINTER, RECORD and ARRAY are considered safe, whereas CPOINTER, CSTR
  
 === Type interoperability
 
-ARRAY and RECORD types cannot be used in external library modules, but it is perfectly legal to use C_Types as formal parameter, or local or module variable types in regular Oberon+ modules. CPOINTER (but not structured C_Types) can be used as field or element type in RECORD or ARRAY.
-
+ARRAY and RECORD types cannot be used in external library modules, but it is perfectly legal to use C_Types as formal parameter, or local or module variable types in regular Oberon+ modules. CPOINTER (but not structured C_Types) can be used as field or element type in RECORD or ARRAY. Structured C_Types (in contrast to CPOINTER to structured C_Types) cannot be used as formal VAR or IN parameters.
+ 
 POINTER and CPOINTER are disjoint in what they can point to and it is not possible to assign from a POINTER to a CPOINTER or vice versa.
 
 A CARRAY and an ARRAY are only assignment compatible if both element types are either CHAR or WCHAR.
@@ -1444,7 +1467,7 @@ The following attributes can be applied to each procedure:
 
 Oberon+ implicitly takes the address of a CSTRUCT, CUNION or CARRAY 
 
-- when passing an actual value of this type to a formal parameter of CPOINTER type of a procedure in an external library module,
+- when passing an actual value of this type to a formal parameter of CPOINTER type,
 - and when assigning a value of this type to a variable of CPOINTER type;
 
 in both cases the CPOINTER base type must be _assignment compatible_ with the actual or assigned value type (see <<Definition of terms>>); as an extension to this rule, each structured C_Type is compatible with a CPOINTER TO VOID.
