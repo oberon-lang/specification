@@ -17,7 +17,7 @@
     <div class="details">
       <span id="author" class="author">Rochus Keller</span><br>
       <span id="email" class="email"><a href="mailto:me@rochus-keller.ch">me@rochus-keller.ch</a></span><br>
-      <span id="revdate">2022-01-06</span>
+      <span id="revdate">2022-01-16</span>
       <br><span id="revremark">work in progress</span>
     </div>
     <div id="toc" class="toc2">
@@ -270,21 +270,23 @@ firstLetter</pre>
         <div class="sect2">
           <h3 id="_numbers">3.2. Numbers</h3>
           <div class="paragraph">
-            <p>Numbers are (unsigned) integer or real constants. The type of an integer
-              constant is the minimal type to which the constant value belongs (see
-              <a href="#_basic_types">Basic types</a>). If the constant is specified
-              with the suffix <code>H</code> (or <code>h</code>), the representation
-              is hexadecimal otherwise the representation is decimal. If a decimal
-              or hexadecimal constant is specified with the suffix <code>I</code>              (or <code>i</code>), then the type is at least <code>INTEGER</code>.
-              If a decimal or hexadecimal constant is specified with the suffix <code>L</code>              (or <code>l</code>), then the type is at least <code>LONGINT</code>.</p>
+            <p>Number literals are (unsigned) integer or real constants. The type of
+              an integer literal is the minimal type to which the constant value
+              belongs (see <a href="#_basic_types">Basic types</a>). If the literal
+              is specified with the suffix <code>H</code> (or <code>h</code>), the
+              representation is hexadecimal otherwise the representation is decimal.
+              If a decimal or hexadecimal literal is specified with the suffix <code>I</code>              (or <code>i</code>), then the type is <code>INTEGER</code>. If a decimal
+              or hexadecimal constant is specified with the suffix <code>L</code>              (or <code>l</code>), then the type is <code>LONGINT</code>.</p>
           </div>
           <div class="paragraph">
             <p>A real number always contains a decimal point and at least one digit
               before the point. Optionally it may also contain a decimal scale factor.
-              The letter <code>E</code> or <code>D</code> (or <code>e</code> or <code>d</code>)
-              means <em>times ten to the power of</em>. A real number is of type
-              <code>REAL</code>, unless it has a scale factor containing the letter
-              D. In this case it is of type <code>LONGREAL</code>.</p>
+              The letter <code>E</code>, <code>D</code> or <code>S</code> (or <code>e</code>,
+              <code>d</code> or <code>s</code>) means <em>times ten to the power of</em>.
+              A real number is of type <code>LONGREAL</code>, if it has a scale factor
+              containing the letter <code>D</code>, or of type <code>REAL</code>,
+              if it has a scale factor containing the letter <code>S</code>. If the
+              scale factor contains the letter <code>E</code> the type is <code>LONGREAL</code>              if the mantissa or exponent are too large to be represented by <code>REAL</code>.</p>
           </div>
           <div class="literalblock">
             <div class="title">Syntax:</div>
@@ -292,7 +294,7 @@ firstLetter</pre>
               <pre>number   = integer | real
 integer  = ( digit {digit} | digit {hexDigit} ('H' | 'h') ) ['L' | 'l' | 'I' | 'i']
 real     = digit {digit} '.' {digit} [Exponent]
-Exponent = ('E' | 'e' | 'D' | 'd') ['+' | '-'] digit {digit}
+Exponent = ('E' | 'e' | 'D' | 'd' | 'S' | 's') ['+' | '-'] digit {digit}
 hexDigit = digit | 'A' ... 'F' | 'a' ... 'f'
 digit    = '0' ... '9'</pre>
             </div>
@@ -2775,6 +2777,18 @@ end Insert</pre>
                   </td>
                 </tr>
                 <tr>
+                  <td class="tableblock halign-left valign-top"></td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">T: integer type, x: cpointer to void</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">T</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">convert C pointer to integer (see <a href="#_c_types">C Types</a>)</p>
+                  </td>
+                </tr>
+                <tr>
                   <td class="tableblock halign-left valign-top">
                     <p class="tableblock">CHR(x)</p>
                   </td>
@@ -4197,12 +4211,13 @@ DeclarationSequence3 =
               literal to a formal parameter of CPOINTER TO CARRAY type of a procedure
               in an external library module, if the CARRAY and ARRAY element types
               are <em>assignment compatible</em>; as an extension to this rule, an
-              ARRAY of an unstructured type or a string literal is compatible with
-              a CPOINTER TO VOID. The compiler or runtime system in use is free to
-              either create a CARRAY copy of the ARRAY or string literal, or to directly
-              pass the memory address for efficiency reasons; in the latter case
-              the compiler or runtime system assure that the memory address remains
-              valid during the call.</p>
+              ARRAY of an unstructured type (including CPOINTER), a string literal
+              or an INTEGER (and its included types) is compatible with a CPOINTER
+              TO VOID. The compiler or runtime system in use is free to either create
+              a CARRAY copy of the ARRAY or string literal, or to directly pass the
+              memory address for efficiency reasons; in the latter case the compiler
+              or runtime system assure that the memory address remains valid during
+              the call.</p>
           </div>
           <div class="admonitionblock note">
             <table>
@@ -4953,6 +4968,11 @@ end Unicode</code></pre>
                 2020-11-16).</p>
             </li>
           </ul>
+        </div>
+        <div class="paragraph">
+          <p>TODO: - array literals, e.g. [ 1, 2, 3 ] or [ [1,2], [3,4], [5,6] ] or
+            like ISO Modula like Array1dType{ 1,2,3 } or Array2dType{ {1,2}, {3,4},
+            {5,6} } which would also support record literals</p>
         </div>
       </div>
     </div>

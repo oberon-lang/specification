@@ -11,7 +11,7 @@
 = The Programming Language Oberon+
 :author: Rochus Keller 
 :email: me@rochus-keller.ch
-:revdate: 2022-01-06
+:revdate: 2022-01-16
 :revremark: work in progress
 :doctype: article 
 :listing-caption: Listing
@@ -108,16 +108,16 @@ firstLetter
 ....
 
 === Numbers
-Numbers are (unsigned) integer or real constants. The type of an integer constant is the minimal type to which the constant value belongs (see <<Basic types>>). If the constant is specified with the suffix `H` (or `h`), the representation is hexadecimal otherwise the representation is decimal. If a decimal or hexadecimal constant is specified with the suffix `I` (or `i`), then the type is at least `INTEGER`. If a decimal or hexadecimal constant is specified with the suffix `L` (or `l`), then the type is at least `LONGINT`.
+Number literals are (unsigned) integer or real constants. The type of an integer literal is the minimal type to which the constant value belongs (see <<Basic types>>). If the literal is specified with the suffix `H` (or `h`), the representation is hexadecimal otherwise the representation is decimal. If a decimal or hexadecimal literal is specified with the suffix `I` (or `i`), then the type is `INTEGER`. If a decimal or hexadecimal constant is specified with the suffix `L` (or `l`), then the type is `LONGINT`.
 
-A real number always contains a decimal point and at least one digit before the point. Optionally it may also contain a decimal scale factor. The letter `E` or `D` (or `e` or `d`) means _times ten to the power of_. A real number is of type `REAL`, unless it has a scale factor containing the letter D. In this case it is of type `LONGREAL`.
+A real number always contains a decimal point and at least one digit before the point. Optionally it may also contain a decimal scale factor. The letter `E`, `D` or `S` (or `e`, `d` or `s`) means _times ten to the power of_. A real number is of type `LONGREAL`, if it has a scale factor containing the letter `D`, or of type `REAL`, if it has a scale factor containing the letter `S`. If the scale factor contains the letter `E` the type is `LONGREAL` if the mantissa or exponent are too large to be represented by `REAL`.
 
 .Syntax:
 ....
 number   = integer | real
 integer  = ( digit {digit} | digit {hexDigit} ('H' | 'h') ) ['L' | 'l' | 'I' | 'i']
 real     = digit {digit} '.' {digit} [Exponent]
-Exponent = ('E' | 'e' | 'D' | 'd') ['+' | '-'] digit {digit}
+Exponent = ('E' | 'e' | 'D' | 'd' | 'S' | 's') ['+' | '-'] digit {digit}
 hexDigit = digit | 'A' ... 'F' | 'a' ... 'f'
 digit    = '0' ... '9'
 ....
@@ -1143,6 +1143,7 @@ The following table lists the predeclared procedures. Some are generic procedure
 |CAST(T,x)	 |T:enumeration type x:ordinal number|enumeration type|the enum item with the ordinal number x; halt if no match
 |			 |T,x: integer type    |T              |convert integer types, accept possible loss of information
 |			 |T, x: cpointer to cstruct or void|T  |unsafe cast of a C pointer (see <<C Types>>)
+|			 |T: integer type, x: cpointer to void|T  |convert C pointer to integer (see <<C Types>>)
 |CHR(x)      |integer type         |CHAR           |Latin-1 character with ordinal number x
 |DEFAULT(T)  |T = basic type       |T              |zero for numeric and character types, false for boolean, empty set
 |            |T = enumeration type |T              |same as MIN(T)
@@ -1472,7 +1473,7 @@ Oberon+ implicitly takes the address of a CSTRUCT, CUNION or CARRAY
 
 in both cases the CPOINTER base type must be _assignment compatible_ with the actual or assigned value type (see <<Definition of terms>>); as an extension to this rule, each structured C_Type is compatible with a CPOINTER TO VOID.
 
-Oberon+ supports passing an actual parameter of ARRAY type or a string literal to a formal parameter of CPOINTER TO CARRAY type of a procedure in an external library module, if the CARRAY and ARRAY element types are _assignment compatible_; as an extension to this rule, an ARRAY of an unstructured type or a string literal is compatible with a CPOINTER TO VOID. The compiler or runtime system in use is free to either create a CARRAY copy of the ARRAY or string literal, or to directly pass the memory address for efficiency reasons; in the latter case the compiler or runtime system assure that the memory address remains valid during the call.
+Oberon+ supports passing an actual parameter of ARRAY type or a string literal to a formal parameter of CPOINTER TO CARRAY type of a procedure in an external library module, if the CARRAY and ARRAY element types are _assignment compatible_; as an extension to this rule, an ARRAY of an unstructured type (including CPOINTER), a string literal or an INTEGER (and its included types) is compatible with a CPOINTER TO VOID. The compiler or runtime system in use is free to either create a CARRAY copy of the ARRAY or string literal, or to directly pass the memory address for efficiency reasons; in the latter case the compiler or runtime system assure that the memory address remains valid during the call.
 
 [NOTE]
 Remember that taking the address of a variable is a potentially unsafe operation because the memory location the address points to could become invalid.
@@ -1832,3 +1833,8 @@ end Unicode
 - [[[Wi73]]] Wirth, N. (1973). The Programming Language Pascal (Revised Report). ETH Report. https://doi.org/10.3929/ethz-a-000814158 (accessed 2020-11-16).
 - [[[Wi87]]] Wirth, N. (1987). From Modula to Oberon and the programming language Oberon. ETH Report. https://doi.org/10.3929/ethz-a-005363226 (accessed 2020-11-16).
 
+
+TODO: 
+- array literals, e.g. [ 1, 2, 3 ] or [ [1,2], [3,4], [5,6] ]
+  or like ISO Modula like Array1dType{ 1,2,3 } or Array2dType{ {1,2}, {3,4}, {5,6} }
+  which would also support record literals
