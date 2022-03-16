@@ -11,7 +11,7 @@
 = The Programming Language Oberon+
 :author: Rochus Keller 
 :email: me@rochus-keller.ch
-:revdate: 2022-01-19
+:revdate: 2022-03-16
 :revremark: work in progress
 :doctype: article 
 :listing-caption: Listing
@@ -26,7 +26,7 @@ Oberon+ (i.e. _Oberon with extensions_, abbreviated *OBX*, pronounced _obex_) is
 
 The most important features of Oberon+ are block structure, modularity, separate compilation, static typing with strong type checking, generic programming footnote:[generic modules, inspired by <<Ada83>>], garbage collection, and type extension with type-bound procedures.
 
-A major design goal of Oberon in 1987 was to make the language as simple as possible <<Wi87>>. Oberon+ follows the same goal, but taking into account the current state of the art. Backwards compatibility remains mostly ensured: a valid Oberon-2 or Oberon-07 program is generally also a valid Oberon+ program footnote:[subject to basic type differences and limited access to objects declared in the environment of nestes procedures].
+A major design goal of Oberon in 1987 was to make the language as simple as possible <<Wi87>>. Oberon+ follows the same goal, but taking into account the current state of the art. Backwards compatibility remains ensured: each valid Oberon-2 or Oberon-07 program is also a valid Oberon+ program.
  
 The language allows several simplifications compared to previous Oberon versions: keywords can be written in lower case, all semicolons are optional, and for some keywords there are shorter variants; a declaration sequence can contain more than one CONST, TYPE and VAR section in arbitrary order, interleaved with procedures. 
 
@@ -142,7 +142,7 @@ character = digit {hexDigit} ('X' | 'x')
 A character is either encoded as a 8-bit code value using the ISO/IEC 8859-1 Latin-1 encoding scheme or a 16-bit code value using the Unicode BMP scheme.
 
 === Strings
-Strings are sequences of printable characters enclosed in single (') or double (") quote marks. The opening quote must be the same as the closing quote and must not occur within the string. The number of characters in a string is called its length. A string of length 1 can be used wherever a character constant is allowed and vice versa.
+Strings are sequences of printable characters enclosed in single (') or double (") quote marks. The opening quote must be the same as the closing quote and must not occur within the string. A string must not extend over the end of a line. The number of characters in a string is called its length. A string of length 1 can be used wherever a character constant is allowed and vice versa.
 
 .Syntax:
 ....
@@ -166,7 +166,8 @@ hexstring = '$' {hexDigit} '$'
 
 .Examples:
 ....
-const arrow = $0F0F 0060 0070 0038 001C 000E 0007 8003 C101 E300 7700 3F00 1F00 3F00 7F00 FF00$
+const arrow = $0F0F 0060 0070 0038 001C 000E 0007 8003 
+			   C101 E300 7700 3F00 1F00 3F00 7F00 FF00$
 ....
 
 [NOTE]
@@ -426,8 +427,9 @@ An array is a structure consisting of a number of elements which are all of the 
 ....
 ArrayType  = ARRAY [ LengthList ] OF type
 	         | '[' [ LengthList ] ']' type
-LengthList = length {',' length}
+LengthList = length {',' length} | VAR varlength {',' varlength}
 length     = ConstExpression
+varlength  = expression
 ....
 
 A type of the form
@@ -453,6 +455,11 @@ array 10, N of integer
 array of char
 [N][M] T
 ....
+
+Local variables of array type can have variable lengths calculated at runtime; in this case the LengthList is prefixed with the VAR keyword; the expression cannot reference other local variables of the same scope.
+
+[NOTE]
+In contrast to array pointers allocated with new(), variable length arrays (VLA) can be allocated on the stack instead of the heap (depending on the compiler and supported options), which makes them attractive to low-resource embedded applications where dynamic memory allocation is not feasible. It is also interesting to note that already the length/range of ALGOL 60 arrays was defined using an ordinary arithmetic expression and thus could be calculated at runtime; even ALGOL W had this feature, but unfortunately Wirth removed it in Pascal, and even Oberon-07 still uses a const expression for array lengths evaluated at compile time.
 
 === Record types
 A record type is a structure consisting of a fixed number of elements, called fields, with possibly different types. The record type declaration specifies the name and type of each field. The scope of the field identifiers extends from the point of their declaration to the end of the record type, but they are also visible within designators referring to elements of record variables (see <<Operands>>). If a record type is exported, field identifiers that are to be visible outside the declaring module must be marked. They are called public fields; unmarked elements are called private fields.
@@ -503,7 +510,7 @@ PointerType = ( POINTER TO | '^' ) type
 If p is a variable of type `P = POINTER TO T`, a call of the predeclared procedure `NEW(p)` (see <<Predeclared procedures>>) allocates a variable of type T in free storage. If T is a record type or an array type with fixed length, the allocation has to be done with `NEW(p)`; if T is an n-dimensional open array type the allocation has to be done with `NEW(p, e~0~, ..., e~n-1~)` where T is allocated with lengths given by the expressions e~0~, ..., e~n-1~. In either case a pointer to the allocated variable is assigned to `p`. `p` is of type P. The referenced variable `p^` is of type T. Any pointer variable may assume the value NIL, which points to no variable at all. All pointer fields or elements of a newly allocated record or array are set to NIL.
 
 === Procedure types
-Variables of a procedure type T have a procedure (or NIL) as value. If a procedure P is assigned to a variable of type T, the formal parameter lists and result types (see <<Formal parameters>>) of P and T must _match_ (see <<Definition of terms>>). A procedure P assigned to a variable or a formal parameter must not be a predeclared or type-bound procedure.
+Variables of a procedure type T have a procedure (or NIL) as value. If a procedure P is assigned to a variable of type T, the formal parameter lists and result types (see <<Formal parameters>>) of P and T must _match_ (see <<Definition of terms>>). A procedure P assigned to a variable or a formal parameter must not be a predeclared, nor a type-bound procedure, nor may it access local variables or parameters declared in outer (type-bound) procedures or call procedure which access local variables or parameters declared in outer (type-bound) procedures.
 
 [NOTE]
 Oberon 90, 2 and 07 don't support assignment of procedures local to another procedure to a procedure type variable. Oberon+ doesn't make this restriction.
@@ -531,7 +538,7 @@ enumeration = '('  ident { [','] ident } ')'
 (Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday)
 ....
 
-The ordinal number of an enumeration identifier can be obtained using the `ORD` predeclared function procedure. `CAST` is the reverse operation. `MIN` returns the first and `MAX` the last ident of the enumeration. `INC` returns the next and `DEC` the previous ident. If T is an enumeration type then `INC(MAX(T))` and `DEC(MIN(T))` are undefined and terminate the program.
+The ordinal number of an enumeration identifier can be obtained using the `ORD` predeclared function procedure, or by just assigning/passing to an integer type variable/parameter. `CAST` is the reverse operation. `MIN` returns the first and `MAX` the last ident of the enumeration. `INC` returns the next and `DEC` the previous ident. If T is an enumeration type then `INC(MAX(T))` and `DEC(MIN(T))` are undefined and terminate the program.
 
 
 == Variable declarations
@@ -995,12 +1002,12 @@ There are two kinds of procedures: proper procedures and function procedures. Th
 
 All constants, variables, types, and procedures declared within a procedure body are local to the procedure. Since procedures may be declared as local objects too, procedure declarations may be nested. The call of a procedure within its declaration implies recursive activation.
 
-In case of nested procedure declarations, inner procedures have access to constants, types and procedures declared in the environment of the procedure (unless shadowed by a local declaration), but don't have access to the parameters or local variables of outer procedures. 
-
-A procedure body may have no statements in which case the ident after the END keyword can also be left out; in a function procedure with no statements a return statement with a default value is assumed.
+Objects declared in the environment of the procedure are also visible in those parts of the procedure in which they are not concealed by a locally declared object with the same name. The type of a parameter or local variable declared in an outer procedure and accessed from a nested procedure cannot be a CSTRUCT, CUNION, CARRAY or CPOINTER (see <<C Types>>).
 
 [NOTE]
-In Oberon 90 and Oberon-2 (in contrast to Oberon-07) the parameters and local variables of an outer procedure can be accessed from an inner procedure, but this features is a cause for considerably higher complexity of the compiler, with questionable added value, and can easily be worked around in practice. 
+Procedures can be nested, and inner procedures have access to the parameters or local variables of outer procedures ("non-local access"). This feature was already supported in ALGOL 60 and adopted by Wirth in Pascal; it is also supported by original Oberon and Oberon-2, but no longer by Oberon-07. Previous versions of Oberon+ followed Oberon-07 and didn't support this feature, mostly because the "classic" implementation by "static links" doesn't fit CIL/ECMA-335 or C99 backends; this version of Oberon+ supports an implementation based on hidden var parameters, which is feasible with the mentioned backends.
+
+A procedure body may have no statements in which case the ident after the END keyword can also be left out; in a function procedure with no statements a return statement with a default value is assumed.
 
 .Syntax:
 ....
@@ -1090,6 +1097,9 @@ Receiver         = '(' [VAR|IN] ident ':' ident ')'
 
 If a procedure P is bound to a type T0, it is implicitly also bound to any type T1 which is an extension of T0. However, a procedure P' (with the same name as P) may be explicitly bound to T1 in which case it overrides the binding of P. P' is considered a redefinition of P for T1. The formal parameters of P and P' must _match_ (see <<Definition of terms>>). If P and T1 are exported (see <<Declarations and scope rules>>), P' must be exported too.
 
+[NOTE]
+The name of a type-bound procedure must be unique within the type to which it is bound, not within the scope in which it is declared.
+
 // TODO: shall we really support Covariance?
 //The formal parameter lists of P and P' must _match_ (see <<Definition of terms>>). Also the result types must _match_, or if P and P' both have pointer result types, then the result type of P' must be an _extension_ of the result type of P footnote:[this is called _covariance_, adopted with modifications from <<Om01>>]. 
 
@@ -1125,8 +1135,11 @@ begin
 end Insert
 ....
 
+Type-bound procedure declarations may be nested and have access to constants, types and procedures declared in the environment of the type-bound procedure (unless concealed by a local declaration), but they don’t have access to the parameters or local variables of outer procedures.
+
 [NOTE]
-The name of a type-bound procedure must be unique within the type to which it is bound, not within the scope in which it is declared.
+A type-bound procedure can still include nested procedures which have access to its parameters and local variables.
+
 
 === Type-bound procedure types
 Variables of a type-bound procedure type T have a type-bound procedure or NIL as value. To assign a type-bound procedure P to a variable of a type-bound procedure type T, the right side of the assignment must be a designator of the form `v^.P` or `v.P`, where `v` is a pointer to record and `P` is a procedure bound to this record. Note, that the dynamic type of `v` determines which procedure is assigned; this may be a different procedure than the one bound to the static type of `v`. The formal parameter lists and result types (see <<Formal parameters>>) of P and T must _match_ (see <<Definition of terms>>). The same rules apply when passing a type-bound procedure to a formal argument of a type-bound procedure type.
@@ -1373,7 +1386,6 @@ ImportList = IMPORT import { [','] import } [';']
 import = [ ident ':=' ] ImportPath ident [ TypeActuals ] 
 ....
 
-Alternatively '<' and '>' can be used to bracket TypeParams and TypeActuals.
 
 Type parameters can be used within the generic module like normal types wherever no information about the actual type is required. The rules for _same types_ and _equal types_ apply analogously to type parameters, and subsequently also the corresponding assignment, parameter and array compatibility rules (see <<Definitions>>). A type parameter is assumed to have a default value, but nothing is known about its inclusion or extension relationships with other types.
 
@@ -1395,7 +1407,7 @@ DeclarationSequence2 = { CONST { ConstDeclaration [';'] }
 			   | VAR { VariableDeclaration [';'] }
 			   | ProcedureHeading [';'] } 
 ....
-
+ 
 
 == Foreign Function Interface
 
@@ -1541,6 +1553,7 @@ Assignment compatible::
     . T~e~ and T~v~ are numeric or character types and T~v~ _includes_ T~e~ footnote:[character types include strings with length 1];
     . T~v~ is a SET type and T~e~ is of INTEGER or smaller type;
     . T~v~ is a BYTE type and T~e~ is a Latin-1 character type;
+    . T~v~ is an integer type and T~e~ is a enumeration type;
     . T~e~ and T~v~ are record types and T~e~ is a _type extension_ of T~v~ and the dynamic type of v is T~v~;
     . T~e~ and T~v~ are pointer types and T~e~ is a _type extension_ of T~v~ or the pointers have _equal_ base types;
     . T~v~ is a pointer or a procedure type and `e` is NIL;
@@ -1616,8 +1629,9 @@ TypeActuals = '(' NamedType { ',' NamedType } ')'
 enumeration = '('  ident { [','] ident } ')' 
 ArrayType = ARRAY [ LengthList ] OF type 
 	 | '[' [ LengthList ] ']' type
-LengthList = length {',' length}
-length = ConstExpression
+LengthList = length {',' length} | VAR varlength {',' varlength}
+length     = ConstExpression
+varlength  = expression
 RecordType = RECORD ['(' BaseType ')'] [FieldListSequence]  END 
 BaseType = NamedType
 FieldListSequence = FieldList [ ';' ] { FieldList [ ';' ] }
@@ -1854,3 +1868,8 @@ TODO:
 - array literals, e.g. [ 1, 2, 3 ] or [ [1,2], [3,4], [5,6] ]
   or like ISO Modula like Array1dType{ 1,2,3 } or Array2dType{ {1,2}, {3,4}, {5,6} }
   which would also support record literals
+- pcall, protected call of a procedure and built-in throw(integer) function
+- allow to register a finalzier for a pointer to record
+- literals and procedure refs as generic arguments, e.g. like ISO Modula
+- means to avoid record assignment
+- underscores in number literals

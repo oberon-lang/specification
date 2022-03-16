@@ -17,7 +17,7 @@
     <div class="details">
       <span id="author" class="author">Rochus Keller</span><br>
       <span id="email" class="email"><a href="mailto:me@rochus-keller.ch">me@rochus-keller.ch</a></span><br>
-      <span id="revdate">2022-01-19</span>
+      <span id="revdate">2022-03-16</span>
       <br><span id="revremark">work in progress</span>
     </div>
     <div id="toc" class="toc2">
@@ -127,8 +127,8 @@
           <p>A major design goal of Oberon in 1987 was to make the language as simple
             as possible <a href="#Wi87">[Wi87]</a>. Oberon+ follows the same goal,
             but taking into account the current state of the art. Backwards compatibility
-            remains mostly ensured: a valid Oberon-2 or Oberon-07 program is generally
-            also a valid Oberon+ program <sup class="footnote">[<a id="_footnoteref_2" class="footnote" href="#_footnote_2" title="View footnote.">2</a>]</sup>.</p>
+            remains ensured: each valid Oberon-2 or Oberon-07 program is also a valid
+            Oberon+ program.</p>
         </div>
         <div class="paragraph">
           <p>The language allows several simplifications compared to previous Oberon
@@ -333,9 +333,10 @@ digit    = '0' ... '9'</pre>
           <div class="paragraph">
             <p>Strings are sequences of printable characters enclosed in single (')
               or double (") quote marks. The opening quote must be the same as the
-              closing quote and must not occur within the string. The number of characters
-              in a string is called its length. A string of length 1 can be used
-              wherever a character constant is allowed and vice versa.</p>
+              closing quote and must not occur within the string. A string must not
+              extend over the end of a line. The number of characters in a string
+              is called its length. A string of length 1 can be used wherever a character
+              constant is allowed and vice versa.</p>
           </div>
           <div class="literalblock">
             <div class="title">Syntax:</div>
@@ -369,7 +370,8 @@ digit    = '0' ... '9'</pre>
             <div class="literalblock">
               <div class="title">Examples:</div>
               <div class="content">
-                <pre>const arrow = $0F0F 0060 0070 0038 001C 000E 0007 8003 C101 E300 7700 3F00 1F00 3F00 7F00 FF00$</pre>
+                <pre>const arrow = $0F0F 0060 0070 0038 001C 000E 0007 8003
+			   C101 E300 7700 3F00 1F00 3F00 7F00 FF00$</pre>
               </div>
             </div>
             <div class="admonitionblock note">
@@ -1144,8 +1146,9 @@ WCHAR &gt;= CHAR</pre>
             <div class="content">
               <pre>ArrayType  = ARRAY [ LengthList ] OF type
 	         | '[' [ LengthList ] ']' type
-LengthList = length {',' length}
-length     = ConstExpression</pre>
+LengthList = length {',' length} | VAR varlength {',' varlength}
+length     = ConstExpression
+varlength  = expression</pre>
             </div>
           </div>
           <div class="paragraph">
@@ -1180,6 +1183,32 @@ array Ln of T</pre>
 array of char
 [N][M] T</pre>
             </div>
+          </div>
+          <div class="paragraph">
+            <p>Local variables of array type can have variable lengths calculated at
+              runtime; in this case the LengthList is prefixed with the VAR keyword;
+              the expression cannot reference other local variables of the same scope.</p>
+          </div>
+          <div class="admonitionblock note">
+            <table>
+              <tr>
+                <td class="icon">
+                  <div class="title">Note</div>
+                </td>
+                <td class="content">
+                  In contrast to array pointers allocated with new(), variable length arrays (VLA)
+                  can be allocated on the stack instead of the heap (depending on
+                  the compiler and supported options), which makes them attractive
+                  to low-resource embedded applications where dynamic memory allocation
+                  is not feasible. It is also interesting to note that already the
+                  length/range of ALGOL 60 arrays was defined using an ordinary arithmetic
+                  expression and thus could be calculated at runtime; even ALGOL
+                  W had this feature, but unfortunately Wirth removed it in Pascal,
+                  and even Oberon-07 still uses a const expression for array lengths
+                  evaluated at compile time.
+                </td>
+              </tr>
+            </table>
           </div>
         </div>
         <div class="sect2">
@@ -1223,7 +1252,7 @@ T1 = record (T0) y: real end</pre>
               in the extended record must be different from the identifiers declared
               in its base type record(s). A pointer field of the base record can
               be re-declared in the extended record with a pointer type which is
-              an extension of the corresponding base record field type <sup class="footnote">[<a id="_footnoteref_3" class="footnote" href="#_footnote_3" title="View footnote.">3</a>]</sup>.</p>
+              an extension of the corresponding base record field type <sup class="footnote">[<a id="_footnoteref_2" class="footnote" href="#_footnote_2" title="View footnote.">2</a>]</sup>.</p>
           </div>
           <div class="paragraph">
             <p>Alternatively, a pointer to record type can be specified as the base
@@ -1289,7 +1318,10 @@ end</pre>
               lists and result types (see <a href="#_formal_parameters">Formal parameters</a>)
               of P and T must <em>match</em> (see <a href="#_definition_of_terms">Definition of terms</a>).
               A procedure P assigned to a variable or a formal parameter must not
-              be a predeclared or type-bound procedure.</p>
+              be a predeclared, nor a type-bound procedure, nor may it access local
+              variables or parameters declared in outer (type-bound) procedures or
+              call procedure which access local variables or parameters declared
+              in outer (type-bound) procedures.</p>
           </div>
           <div class="admonitionblock note">
             <table>
@@ -1337,7 +1369,9 @@ end</pre>
           </div>
           <div class="paragraph">
             <p>The ordinal number of an enumeration identifier can be obtained using
-              the <code>ORD</code> predeclared function procedure. <code>CAST</code>              is the reverse operation. <code>MIN</code> returns the first and <code>MAX</code>              the last ident of the enumeration. <code>INC</code> returns the next
+              the <code>ORD</code> predeclared function procedure, or by just assigning/passing
+              to an integer type variable/parameter. <code>CAST</code> is the reverse
+              operation. <code>MIN</code> returns the first and <code>MAX</code>              the last ident of the enumeration. <code>INC</code> returns the next
               and <code>DEC</code> the previous ident. If T is an enumeration type
               then <code>INC(MAX(T))</code> and <code>DEC(MIN(T))</code> are undefined
               and terminate the program.</p>
@@ -1429,7 +1463,7 @@ ExpList    = expression {',' expression}</pre>
             <p>Dereferencing is also implied if a pointer is assigned to a variable
               of a record or array type, if a pointer is used as actual parameter
               for a formal parameter of a record or array type, or if a pointer is
-              used as argument of the standard procedure LEN <sup class="footnote">[<a id="_footnoteref_4" class="footnote" href="#_footnote_4" title="View footnote.">4</a>]</sup>.</p>
+              used as argument of the standard procedure LEN <sup class="footnote">[<a id="_footnoteref_3" class="footnote" href="#_footnote_3" title="View footnote.">3</a>]</sup>.</p>
           </div>
           <div class="paragraph">
             <p>If <code>a</code> or <code>r</code> are read-only, then also <code>a[e]</code>              and <code>r.f</code> are read-only.</p>
@@ -2340,15 +2374,11 @@ Guard         = qualident ':' qualident</pre>
             a procedure within its declaration implies recursive activation.</p>
         </div>
         <div class="paragraph">
-          <p>In case of nested procedure declarations, inner procedures have access
-            to constants, types and procedures declared in the environment of the
-            procedure (unless shadowed by a local declaration), but don&#8217;t have
-            access to the parameters or local variables of outer procedures.</p>
-        </div>
-        <div class="paragraph">
-          <p>A procedure body may have no statements in which case the ident after the
-            END keyword can also be left out; in a function procedure with no statements
-            a return statement with a default value is assumed.</p>
+          <p>Objects declared in the environment of the procedure are also visible in
+            those parts of the procedure in which they are not concealed by a locally
+            declared object with the same name. The type of a parameter or local
+            variable declared in an outer procedure and accessed from a nested procedure
+            cannot be a CSTRUCT, CUNION, CARRAY or CPOINTER (see <a href="#_c_types">C Types</a>).</p>
         </div>
         <div class="admonitionblock note">
           <table>
@@ -2357,14 +2387,23 @@ Guard         = qualident ':' qualident</pre>
                 <div class="title">Note</div>
               </td>
               <td class="content">
-                In Oberon 90 and Oberon-2 (in contrast to Oberon-07) the parameters and local variables
-                of an outer procedure can be accessed from an inner procedure, but
-                this features is a cause for considerably higher complexity of the
-                compiler, with questionable added value, and can easily be worked
-                around in practice.
+                Procedures can be nested, and inner procedures have access to the parameters or local
+                variables of outer procedures ("non-local access"). This feature
+                was already supported in ALGOL 60 and adopted by Wirth in Pascal;
+                it is also supported by original Oberon and Oberon-2, but no longer
+                by Oberon-07. Previous versions of Oberon+ followed Oberon-07 and
+                didn&#8217;t support this feature, mostly because the "classic" implementation
+                by "static links" doesn&#8217;t fit CIL/ECMA-335 or C99 backends;
+                this version of Oberon+ supports an implementation based on hidden
+                var parameters, which is feasible with the mentioned backends.
               </td>
             </tr>
           </table>
+        </div>
+        <div class="paragraph">
+          <p>A procedure body may have no statements in which case the ident after the
+            END keyword can also be left out; in a function procedure with no statements
+            a return statement with a default value is assumed.</p>
         </div>
         <div class="literalblock">
           <div class="title">Syntax:</div>
@@ -2518,6 +2557,19 @@ Receiver         = '(' [VAR|IN] ident ':' ident ')'</pre>
               If P and T1 are exported (see <a href="#_declarations_and_scope_rules">Declarations and scope rules</a>),
               P' must be exported too.</p>
           </div>
+          <div class="admonitionblock note">
+            <table>
+              <tr>
+                <td class="icon">
+                  <div class="title">Note</div>
+                </td>
+                <td class="content">
+                  The name of a type-bound procedure must be unique within the type to which it is
+                  bound, not within the scope in which it is declared.
+                </td>
+              </tr>
+            </table>
+          </div>
           <div class="paragraph">
             <p>If <code>v</code> is a designator and <code>P</code> is a type-bound
               procedure, then <code>v.P</code> denotes that procedure <code>P</code>              which is bound to the dynamic type of <code>v</code>. Note, that this
@@ -2559,6 +2611,12 @@ begin
 end Insert</pre>
             </div>
           </div>
+          <div class="paragraph">
+            <p>Type-bound procedure declarations may be nested and have access to constants,
+              types and procedures declared in the environment of the type-bound
+              procedure (unless concealed by a local declaration), but they don’t
+              have access to the parameters or local variables of outer procedures.</p>
+          </div>
           <div class="admonitionblock note">
             <table>
               <tr>
@@ -2566,8 +2624,8 @@ end Insert</pre>
                   <div class="title">Note</div>
                 </td>
                 <td class="content">
-                  The name of a type-bound procedure must be unique within the type to which it is
-                  bound, not within the scope in which it is declared.
+                  A type-bound procedure can still include nested procedures which have access to its
+                  parameters and local variables.
                 </td>
               </tr>
             </table>
@@ -3906,10 +3964,6 @@ import = [ ident ':=' ] ImportPath ident [ TypeActuals ]</pre>
             </div>
           </div>
           <div class="paragraph">
-            <p>Alternatively '&lt;' and '&gt;' can be used to bracket TypeParams and
-              TypeActuals.</p>
-          </div>
-          <div class="paragraph">
             <p>Type parameters can be used within the generic module like normal types
               wherever no information about the actual type is required. The rules
               for <em>same types</em> and <em>equal types</em> apply analogously
@@ -4373,7 +4427,7 @@ DeclarationSequence3 =
                   </li>
                   <li>
                     <p>T<sub>e</sub> and T<sub>v</sub> are numeric or character types
-                      and T<sub>v</sub> <em>includes</em> T<sub>e</sub> <sup class="footnote">[<a id="_footnoteref_5" class="footnote" href="#_footnote_5" title="View footnote.">5</a>]</sup>;</p>
+                      and T<sub>v</sub> <em>includes</em> T<sub>e</sub> <sup class="footnote">[<a id="_footnoteref_4" class="footnote" href="#_footnote_4" title="View footnote.">4</a>]</sup>;</p>
                   </li>
                   <li>
                     <p>T<sub>v</sub> is a SET type and T<sub>e</sub> is of INTEGER or
@@ -4381,6 +4435,10 @@ DeclarationSequence3 =
                   </li>
                   <li>
                     <p>T<sub>v</sub> is a BYTE type and T<sub>e</sub> is a Latin-1 character
+                      type;</p>
+                  </li>
+                  <li>
+                    <p>T<sub>v</sub> is an integer type and T<sub>e</sub> is a enumeration
                       type;</p>
                   </li>
                   <li>
@@ -4725,8 +4783,9 @@ TypeActuals = '(' NamedType { ',' NamedType } ')'
 enumeration = '('  ident { [','] ident } ')'
 ArrayType = ARRAY [ LengthList ] OF type
 	 | '[' [ LengthList ] ']' type
-LengthList = length {',' length}
-length = ConstExpression
+LengthList = length {',' length} | VAR varlength {',' varlength}
+length     = ConstExpression
+varlength  = expression
 RecordType = RECORD ['(' BaseType ')'] [FieldListSequence]  END
 BaseType = NamedType
 FieldListSequence = FieldList [ ';' ] { FieldList [ ';' ] }
@@ -5009,7 +5068,11 @@ end Unicode</code></pre>
         <div class="paragraph">
           <p>TODO: - array literals, e.g. [ 1, 2, 3 ] or [ [1,2], [3,4], [5,6] ] or
             like ISO Modula like Array1dType{ 1,2,3 } or Array2dType{ {1,2}, {3,4},
-            {5,6} } which would also support record literals</p>
+            {5,6} } which would also support record literals - pcall, protected call
+            of a procedure and built-in throw(integer) function - allow to register
+            a finalzier for a pointer to record - literals and procedure refs as
+            generic arguments, e.g. like ISO Modula - means to avoid record assignment
+            - underscores in number literals</p>
         </div>
       </div>
     </div>
@@ -5020,18 +5083,14 @@ end Unicode</code></pre>
       <a href="#_footnoteref_1">1</a>. generic modules, inspired by <a href="#Ada83">[Ada83]</a>
     </div>
     <div class="footnote" id="_footnote_2">
-      <a href="#_footnoteref_2">2</a>. subject to basic type differences and limited
-      access to objects declared in the environment of nestes procedures
-    </div>
-    <div class="footnote" id="_footnote_3">
-      <a href="#_footnoteref_3">3</a>. this corresponds to the implementation of
+      <a href="#_footnoteref_2">2</a>. this corresponds to the implementation of
       the Blackbox framework 1.7, see <a href="https://blackboxframework.org" class="bare">https://blackboxframework.org</a>      <a href="#Om01">[Om01]</a>
     </div>
-    <div class="footnote" id="_footnote_4">
-      <a href="#_footnoteref_4">4</a>. adopted from <a href="#Om01">[Om01]</a>
+    <div class="footnote" id="_footnote_3">
+      <a href="#_footnoteref_3">3</a>. adopted from <a href="#Om01">[Om01]</a>
     </div>
-    <div class="footnote" id="_footnote_5">
-      <a href="#_footnoteref_5">5</a>. character types include strings with length
+    <div class="footnote" id="_footnote_4">
+      <a href="#_footnoteref_4">4</a>. character types include strings with length
       1
     </div>
   </div>
