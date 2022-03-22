@@ -11,7 +11,7 @@
 = The Programming Language Oberon+
 :author: Rochus Keller 
 :email: me@rochus-keller.ch
-:revdate: 2022-03-16
+:revdate: 2022-03-21
 :revremark: work in progress
 :doctype: article 
 :listing-caption: Listing
@@ -281,7 +281,8 @@ Oberon-07 only knows the `*` export mark; all module variables are exported read
 The following identifiers are predeclared; their meaning is defined in the indicated sections; either all capital or all lower case identifiers are supported (only capital versions shown).
 [cols="1,1,1,1"]
 |===
-|ABS      
+|ABS    
+|ANYREC  
 |ASH      
 |ASR      
 |ASSERT   
@@ -354,6 +355,9 @@ N = 100
 limit = 2*N - 1
 fullSet = {min(set) .. max(set)}
 ....
+
+[NOTE]
+For compile time calculations of values the same rules as for runtime calculation apply. The ConstExpression of ConstDeclaration behaves as if each use of the constant identifier was replaced by the ConstExpression. An expression like `MAX(INTEGER)+1` thus causes an overflow of the INTEGER range. To avoid this either `LONG(MAX(INTEGER))+1` or `MAX(INTEGER)+1L` has to be used.
 
 == Type declarations
 A data type determines the set of values which variables of that type may assume, and the operators that are applicable. A type declaration associates an identifier with a type. In the case of structured types (arrays and records) it also defines the structure of variables of this type. A structured type cannot contain itself.
@@ -438,13 +442,10 @@ A type of the form
 array L0, L1, ..., Ln of T
 ....
 
-is understood as an abbreviation of
+is an abbreviation for
 
 ....
-array L0 of
-array L1 of
-...
-array Ln of T
+array L0 of array L1 of ... array Ln of T
 ....
 
 Arrays declared without length are called _open arrays_. They are restricted to pointer base types (see <<Pointer types>>), element types of open array types, and formal parameter types (see <<Formal parameters>>). 
@@ -579,7 +580,7 @@ selector   = '.' ident | '[' ExpList ']' | '^' | '(' qualident ')'
 ExpList    = expression {',' expression}
 ....
 
-If `a` designates an array, then `a[e]` denotes that element of `a` whose index is the current value of the expression `e`. The type of `e` must be an _integer type_. A designator of the form `a[e~0~, e~1~, ..., e~n~]` stands for `a[e~0~][e~1~]...[e~n~]`. 
+If `a` designates an array, then `a[e]` denotes that element of `a` whose index is the current value of the expression `e`. The type of `e` must be an _integer type_. A designator of the form `a[e~0~, e~1~, ..., e~n~]` is an abbreviation for `a[e~0~][e~1~]...[e~n~]`. 
 
 If `r` designates a record, then `r.f` denotes the field `f` of `r` or the procedure `f` bound to the dynamic type of `r` (see <<Type-bound procedures>>). If `p` designates a pointer, `p^` denotes the variable which is referenced by `p`. The designators `p^.f` and `p^[e]` may be abbreviated as `p.f` and `p[e]`, i.e. record and array selectors imply dereferencing. 
 
@@ -660,6 +661,9 @@ x    y    x DIV y    x MOD y
 -5   3    -2         1
 ....
 
+[NOTE]
+Oberon+ doesn't require overflow checks. If the representation of the result of an arithmetic operation would require a wider integer type than provided by the type of the expression, the behaviour is undefined; e.g. `MAX(INTEGER)+1` causes an overflow, i.e. the result could be MIN(INTEGER) or anything else (even a termination of the program).
+
 ==== Set Operators
 
 [width=70%,cols="1,3"]
@@ -691,7 +695,7 @@ A set constructor defines the value of a set by listing its elements between cur
 
 Relations yield a BOOLEAN result. The relations `=`, `\#`, `<`, `\<=`, `>`, and `>=` apply to the numeric types, as well as enumerations, CHAR, strings, and CHAR arrays containing `0x` as a terminator. The relations `=` and `#` also apply to BOOLEAN and SET, as well as to pointer and procedure types (including the value NIL). `x IN s` stands for _x is an element of s_. `x` must be of an integer type, and `s` of type SET. `v IS T` stands for _the dynamic type of `v` is T (or an extension of T )_ and is called a type test. It is applicable if
 
-. `v` is a variable parameter of record type or `v` is a pointer, and if
+. `v` is a variable parameter of record type, or `v` is a record pointer (which can be NIL), and if
 . T is an extension of the static type of `v`.
 
 .Examples:
@@ -1541,6 +1545,7 @@ Type extension (record)::
 
     1. T~a~ and T~b~ are the _same types_, or
     2. T~b~ is a direct extension of T~a~.
+    3. T~a~ is of type ANYREC.
     
 Type extension (pointer)::
     If P~a~ = POINTER TO T~a~ and P~b~ = POINTER TO T~b~ , P~b~ is an extension of P~a~ (P~a~ is a base type of P~b~) if T~b~ is an extension of T~a~. 
