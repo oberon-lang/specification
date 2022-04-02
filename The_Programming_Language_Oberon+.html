@@ -17,7 +17,7 @@
     <div class="details">
       <span id="author" class="author">Rochus Keller</span><br>
       <span id="email" class="email"><a href="mailto:me@rochus-keller.ch">me@rochus-keller.ch</a></span><br>
-      <span id="revdate">2022-03-21</span>
+      <span id="revdate">2022-04-02</span>
       <br><span id="revremark">work in progress</span>
     </div>
     <div id="toc" class="toc2">
@@ -1035,13 +1035,17 @@ Function = procedure(x: integer): integer</pre>
           </div>
           <table class="tableblock frame-all grid-all spread">
             <colgroup>
-              <col style="width: 28.5714%;">
-              <col style="width: 71.4286%;">
+              <col style="width: 25%;">
+              <col style="width: 12.5%;">
+              <col style="width: 62.5%;">
             </colgroup>
             <tbody>
               <tr>
                 <td class="tableblock halign-left valign-top">
                   <p class="tableblock">BOOLEAN</p>
+                </td>
+                <td class="tableblock halign-left valign-top">
+                  <p class="tableblock">1 byte</p>
                 </td>
                 <td class="tableblock halign-left valign-top">
                   <p class="tableblock">the truth values true and false</p>
@@ -1052,12 +1056,18 @@ Function = procedure(x: integer): integer</pre>
                   <p class="tableblock">BYTE</p>
                 </td>
                 <td class="tableblock halign-left valign-top">
+                  <p class="tableblock">1 byte</p>
+                </td>
+                <td class="tableblock halign-left valign-top">
                   <p class="tableblock">the integers between 0 and 255</p>
                 </td>
               </tr>
               <tr>
                 <td class="tableblock halign-left valign-top">
                   <p class="tableblock">CHAR</p>
+                </td>
+                <td class="tableblock halign-left valign-top">
+                  <p class="tableblock">1 byte</p>
                 </td>
                 <td class="tableblock halign-left valign-top">
                   <p class="tableblock">the characters of the Latin-1 set (0x .. 0ffx)</p>
@@ -1068,12 +1078,18 @@ Function = procedure(x: integer): integer</pre>
                   <p class="tableblock">SHORTINT</p>
                 </td>
                 <td class="tableblock halign-left valign-top">
+                  <p class="tableblock">2 byte</p>
+                </td>
+                <td class="tableblock halign-left valign-top">
                   <p class="tableblock">the integers between MIN(SHORTINT) and MAX(SHORTINT)</p>
                 </td>
               </tr>
               <tr>
                 <td class="tableblock halign-left valign-top">
                   <p class="tableblock">INTEGER</p>
+                </td>
+                <td class="tableblock halign-left valign-top">
+                  <p class="tableblock">4 byte</p>
                 </td>
                 <td class="tableblock halign-left valign-top">
                   <p class="tableblock">the integers between MIN(INTEGER) and MAX(INTEGER)</p>
@@ -1084,6 +1100,9 @@ Function = procedure(x: integer): integer</pre>
                   <p class="tableblock">LONGINT</p>
                 </td>
                 <td class="tableblock halign-left valign-top">
+                  <p class="tableblock">8 byte</p>
+                </td>
+                <td class="tableblock halign-left valign-top">
                   <p class="tableblock">the integers between MIN(LONGINT) and MAX(LONGINT)</p>
                 </td>
               </tr>
@@ -1092,7 +1111,10 @@ Function = procedure(x: integer): integer</pre>
                   <p class="tableblock">REAL</p>
                 </td>
                 <td class="tableblock halign-left valign-top">
-                  <p class="tableblock">the real numbers between MIN(REAL) and MAX(REAL)</p>
+                  <p class="tableblock">32 bit</p>
+                </td>
+                <td class="tableblock halign-left valign-top">
+                  <p class="tableblock">an IEEE 754 floating point number</p>
                 </td>
               </tr>
               <tr>
@@ -1100,12 +1122,18 @@ Function = procedure(x: integer): integer</pre>
                   <p class="tableblock">LONGREAL</p>
                 </td>
                 <td class="tableblock halign-left valign-top">
-                  <p class="tableblock">the real numbers between MIN(LONGREAL) and MAX(LONGREAL)</p>
+                  <p class="tableblock">64 bit</p>
+                </td>
+                <td class="tableblock halign-left valign-top">
+                  <p class="tableblock">an IEEE 754 floating point number</p>
                 </td>
               </tr>
               <tr>
                 <td class="tableblock halign-left valign-top">
                   <p class="tableblock">SET</p>
+                </td>
+                <td class="tableblock halign-left valign-top">
+                  <p class="tableblock">4 byte</p>
                 </td>
                 <td class="tableblock halign-left valign-top">
                   <p class="tableblock">the sets of integers between 0 and MAX(SET)</p>
@@ -1114,6 +1142,9 @@ Function = procedure(x: integer): integer</pre>
               <tr>
                 <td class="tableblock halign-left valign-top">
                   <p class="tableblock">WCHAR</p>
+                </td>
+                <td class="tableblock halign-left valign-top">
+                  <p class="tableblock">2 byte</p>
                 </td>
                 <td class="tableblock halign-left valign-top">
                   <p class="tableblock">the characters of the Unicode BMP set (0x .. 0d7ffx, 0f900x ..
@@ -1133,7 +1164,7 @@ Function = procedure(x: integer): integer</pre>
               <pre>LONGINT &gt;= INTEGER &gt;= SHORTINT &gt;= BYTE
 LONGREAL &gt;= REAL
 REAL &gt;= SHORTINT
-LONGREAL &gt;= LONGINT
+LONGREAL &gt;= INTEGER
 WCHAR &gt;= CHAR</pre>
             </div>
           </div>
@@ -1144,14 +1175,32 @@ WCHAR &gt;= CHAR</pre>
                   <div class="title">Note</div>
                 </td>
                 <td class="content">
-                  The precision of BYTE and CHAR is 8 bits. The precision of WCHAR is 16 bits. The
-                  bit precision of LONGINT is limited by the bit precision of the
-                  LONGREAL mantissa bit precision (which is 52 bits in case of IEEE
-                  754 double precision representation). REAL is not expected to (fully)
-                  include INTEGER; if an INTEGER is assigned to a REAL, the compiler
-                  issues a warning unless the predeclared function FLT is used. The
-                  bit precision of SHORTINT is equal or greater than the bit precision
-                  of BYTE.
+                  Because of the limited bit precision of the LONGREAL mantissa (which is 52 bits in
+                  IEEE 754 double precision representation), a LONGREAL does not
+                  fully include LONGINT. Similarly REAL does not include the full
+                  range of INTEGER. To convert a LONGINT to a LONGREAL or an INTEGER
+                  to a REAL the FLT() built-in function should be used.
+                </td>
+              </tr>
+            </table>
+          </div>
+          <div class="paragraph">
+            <p>A compiler is free to support other type inclusion relations in addition
+              to the ones specified herein, but shall at least issue a warning if
+              in a given operation information could be lost. A compiler shall at
+              least support the Oberon 90 and Oberon-2 type inclusion relations in
+              this way.</p>
+          </div>
+          <div class="admonitionblock note">
+            <table>
+              <tr>
+                <td class="icon">
+                  <div class="title">Note</div>
+                </td>
+                <td class="content">
+                  Oberon 90 and Oberon-2 specify the following type inclusion relations which are not
+                  compatible with the ones specified herein: LONGREAL &gt;= REAL
+                  &gt;= LONGINT &gt;= INTEGER &gt;= SHORTINT.
                 </td>
               </tr>
             </table>
@@ -3012,7 +3061,7 @@ end Insert</pre>
                   </td>
                   <td class="tableblock halign-left valign-top">
                     <p class="tableblock">Convert integer to real type; result is LONGREAL if x was LONGINT,
-                      else REAL</p>
+                      else REAL, accepting potential loss of information</p>
                   </td>
                 </tr>
                 <tr>
