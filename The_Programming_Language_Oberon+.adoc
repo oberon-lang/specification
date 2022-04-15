@@ -11,7 +11,7 @@
 = The Programming Language Oberon+
 :author: Rochus Keller 
 :email: me@rochus-keller.ch
-:revdate: 2022-04-02
+:revdate: 2022-04-15
 :revremark: work in progress
 :doctype: article 
 :listing-caption: Listing
@@ -1038,7 +1038,12 @@ If a procedure declaration specifies a receiver parameter, the procedure is cons
 === Formal parameters
 Formal parameters are identifiers declared in the formal parameter list of a procedure. They correspond to actual parameters specified in the procedure call. The correspondence between formal and actual parameters is established when the procedure is called. There are three kinds of parameters, value, variable (VAR) and IN parameters, indicated in the formal parameter list by the absence or presence of the keyword VAR and IN. 
 
-Value parameters are local variables to which the value of the corresponding actual parameter is assigned as an initial value. VAR parameters correspond to actual parameters that are variables, and they stand for these variables. IN parameters are like VAR parameters, but they are read-only in the procedure body. 
+Value parameters are local variables to which the value of the corresponding actual parameter is assigned as an initial value. VAR parameters correspond to actual parameters that are variables, and they stand for these variables. 
+
+IN parameters are like VAR parameters, but they are read-only in the procedure body. If an IN parameters is of ARRAY or RECORD type, then also the elements or fields are transitively read-only in the procedure body.
+
+[NOTE]
+IN parameters of pointer type are supported, but the dereferenced ARRAY or RECORD is not read-only in the procedure body. IN parameters of pointer type are mostly relevant for generic modules (see <<Generics>>).
 
 The scope of a formal parameter extends from its declaration to the end of the procedure block in which it is declared. A function procedure without parameters must have an empty parameter list. It must be called by a function designator whose actual parameter list is empty too. The result type of a procedure cannot be an open array. 
 
@@ -1877,7 +1882,7 @@ TODO:
   or like ISO Modula like Array1dType{ 1,2,3 } or Array2dType{ {1,2}, {3,4}, {5,6} }
   which would also support record literals
 - pcall, protected call of a procedure and built-in throw(integer) function
-- allow to register a finalzier for a pointer to record
+- allow to register a type-bound procedure as a finalzier for a pointer to record
 - literals and procedure refs as generic arguments, e.g. like ISO Modula
 - means to avoid record assignment
 - underscores in number literals
