@@ -11,7 +11,7 @@
 = The Programming Language Oberon+
 :author: Rochus Keller 
 :email: me@rochus-keller.ch
-:revdate: 2022-04-15
+:revdate: 2022-04-27
 :revremark: work in progress
 :doctype: article 
 :listing-caption: Listing
@@ -30,7 +30,7 @@ A major design goal of Oberon in 1987 was to make the language as simple as poss
  
 The language allows several simplifications compared to previous Oberon versions: keywords can be written in lower case, all semicolons are optional, and for some keywords there are shorter variants; a declaration sequence can contain more than one CONST, TYPE and VAR section in arbitrary order, interleaved with procedures. 
 
-Furthermore, enumeration types (known as _scalar types_ in Pascal <<Wi73>>) have been added to the language. IN can be used instead of VAR for constant variable parameters. The foreign function interface (FFI) is a regular feature of the language.
+Furthermore, enumeration types (known as _scalar types_ in Pascal <<Wi73>>), type-bound procedure types and explicit bit operations have been added to the language. IN can be used instead of VAR for constant variable parameters. The length of array type local variable can be determined at runtime. The foreign function interface (FFI) is a regular feature of the language.
 
 This report is not intended as a programmer's tutorial. It is intentionally kept concise. Its function is to serve as a reference for programmers, implementors, and tutorial writers. What remains unsaid is mostly left so intentionally, either because it can be derived from stated rules of the language, or because it would require to commit the definition when a general commitment appears as unwise.
 
@@ -464,6 +464,8 @@ Local variables of array type can have variable lengths calculated at runtime; i
 
 [NOTE]
 In contrast to array pointers allocated with new(), variable length arrays (VLA) can be allocated on the stack instead of the heap (depending on the compiler and supported options), which makes them attractive to low-resource embedded applications where dynamic memory allocation is not feasible. It is also interesting to note that already the length/range of ALGOL 60 arrays was defined using an ordinary arithmetic expression and thus could be calculated at runtime; even ALGOL W had this feature, but unfortunately Wirth removed it in Pascal, and even Oberon-07 still uses a const expression for array lengths evaluated at compile time.
+
+At least array lengths between 1 and MAX(INTEGER) are supported, for both constant and variable lengths.
 
 === Record types
 A record type is a structure consisting of a fixed number of elements, called fields, with possibly different types. The record type declaration specifies the name and type of each field. The scope of the field identifiers extends from the point of their declaration to the end of the record type, but they are also visible within designators referring to elements of record variables (see <<Operands>>). If a record type is exported, field identifiers that are to be visible outside the declaring module must be marked. They are called public fields; unmarked elements are called private fields.
@@ -1300,7 +1302,7 @@ COPY allows the assignment of a string or a CHAR array containing a terminating 
 
 
 == Modules
-A module is a collection of declarations of constants, types, variables, and procedures, together with a sequence of statements for the purpose of assigning initial values to the variables. A module constitutes a text that is compilable as a unit.
+A module is a collection of declarations of constants, types, variables, and procedures, together with a sequence of statements for the purpose of assigning initial values to the variables. A module constitutes a text that is compilable as a unit (compilation unit).
 
 .Syntax:
 ....
@@ -1425,6 +1427,9 @@ DeclarationSequence2 = { CONST { ConstDeclaration [';'] }
 
 Oberon+ includes the possibility to call functions from and exchange data with external C shared libraries. To avoid confusion with existing POINTER, ARRAY and RECORD types, Oberon+ includes special C compatible types.
 
+[NOTE]
+Oberon+ has no SYSTEM module. Use the foreign function interface instead and the predeclared BITop() function procedures to convert basic types to byte arrays and vice versa.
+
 === External Library Modules
 
 An external library module is a DEFINITION module with an attribute list, and with a few more differences to normal DEFINITIONs, which will be discussed in the following.  
@@ -1517,6 +1522,58 @@ Oberon+ supports passing an actual parameter of ARRAY type or a string literal t
 
 [NOTE]
 Remember that taking the address of a variable is a potentially unsafe operation because the memory location the address points to could become invalid.
+
+== Source code directives
+Source code directives are used to set configuration variables in the source text and to select specific pieces of the source text to be compiled (conditional compilation). Oberon+ uses the syntax recommended in <<Oak95>>.
+
+=== Configuration Variables
+
+Configuration variables can be set or unset in the source code using the following syntax: 
+
+.Syntax:
+....
+directive = '<*' ident ( '+' | '-' ) '*>'
+....
+
+Each variable is named by an ident which follows the syntax specified in <<Identifiers>>. Variable names have compilation unit scope which is separate from all other scopes of the program. Configuration variable directives can be placed anywhere in the source code. The directive only affects the present compilation unit, starting from its position in the source code. 
+
+.Example:
+....
+<* WIN32+ *>
+<* WIN64- *>
+....
+
+[NOTE]
+Usually the compiler provides the possibility to set configuration variables, e.g. via command line interface.
+
+=== Conditional compilation
+
+Conditional compilation directives can be placed anywhere in the source code. The following syntax applies:
+
+.Syntax:
+....
+directive = '<*' [ scIf | scElsif | scElse | scEnd ] '*>'
+scIf   	  = IF scExpr THEN 
+scElsif   = ELSIF condition THEN 
+scElse 	  = ELSE
+scEnd 	  = END
+condition = scTerm { OR scTerm }
+scTerm 	  = scFactor {'&' scFactor}
+scFactor  = ident | '(' condition ')' | '~' scFactor
+....
+
+An ELSIF or ELSE directive must be preceded by an IF or another ELSIF directive. Each IF directive must be ended by an END directive. The directives form sections of the source code. Only the section the condition of which is TRUE (or the section framed by ELSE and END directive otherwise) is visible to the compiler. Conditions are boolean expressions. Ident refers to a configuration variable. When a configuration variable is not explicitly set it is assumed to be FALSE. Each section can contain nested conditional compilation directives. 
+
+.Example:
+....
+<* if A then *>
+  println("A")
+<* elsif B & ~C then *> 
+  println("B & ~C")
+<* else *> 
+  println("D")
+<* end *> 
+....
 
 [appendix]
 == Definition of terms
@@ -1622,7 +1679,6 @@ Matching formal parameter lists::
     
 Matching result types::
     The result types of two procedures match if they are either the _same type_ or none. 
-    
 
 [appendix]
 == Syntax of Oberon+
@@ -1734,7 +1790,7 @@ DeclarationSequence2 =
 ....
 
 [NOTE]
-The <<Foreign Function Interface>> syntax is not included here.
+The <<Foreign Function Interface>> and <<Source code directives>> syntax is not included here.
 
 [appendix]
 == More Code Examples
@@ -1871,6 +1927,7 @@ end Unicode
 == References
 - [[[Ada83]]] ISO 8652:1987 Programming languages — Ada. International Organization for Standardization.
 - [[[Mo91]]] Mössenböck, H.; Wirth, N. (1991). The Programming Language Oberon-2. Structured Programming, 12(4):179-195, 1991. http://www.ssw.uni-linz.ac.at/Research/Papers/Oberon2.pdf (accessed 2020-11-16).
+- [[[Oak95]]] Kirk, B. et al. (1995). The Oakwood Guidelines for Oberon-2 Compiler Developers. Revision 1A. https://web.archive.org/web/20171226172235/https://www.math.bas.bg/bantchev/place/oberon/oakwood-guidelines.pdf (accessed 2022-04-26).
 - [[[Om01]]] Oberon microsystems, Inc. (2001). Component Pascal Language Report. https://web.archive.org/web/20191021025943/http://www.oberon.ch/pdf/CP-Lang.pdf (accessed 2021-01-21).
 - [[[Wi16]]] Wirth, N. (2016). The Programming Language Oberon. https://people.inf.ethz.ch/wirth/Oberon/Oberon07.Report.pdf (accessed 2020-11-16).
 - [[[Wi73]]] Wirth, N. (1973). The Programming Language Pascal (Revised Report). ETH Report. https://doi.org/10.3929/ethz-a-000814158 (accessed 2020-11-16).

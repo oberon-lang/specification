@@ -17,7 +17,7 @@
     <div class="details">
       <span id="author" class="author">Rochus Keller</span><br>
       <span id="email" class="email"><a href="mailto:me@rochus-keller.ch">me@rochus-keller.ch</a></span><br>
-      <span id="revdate">2022-04-15</span>
+      <span id="revdate">2022-04-27</span>
       <br><span id="revremark">work in progress</span>
     </div>
     <div id="toc" class="toc2">
@@ -93,6 +93,12 @@
             <li><a href="#_implicit_address_of_operation">12.5. Implicit address-of operation</a></li>
           </ul>
         </li>
+        <li><a href="#_source_code_directives">13. Source code directives</a>
+          <ul class="sectlevel2">
+            <li><a href="#_configuration_variables">13.1. Configuration Variables</a></li>
+            <li><a href="#_conditional_compilation">13.2. Conditional compilation</a></li>
+          </ul>
+        </li>
         <li><a href="#_definition_of_terms">Appendix A: Definition of terms</a></li>
         <li><a href="#_syntax_of_oberon">Appendix B: Syntax of Oberon+</a></li>
         <li><a href="#_more_code_examples">Appendix C: More Code Examples</a></li>
@@ -139,9 +145,11 @@
         </div>
         <div class="paragraph">
           <p>Furthermore, enumeration types (known as <em>scalar types</em> in Pascal
-            <a href="#Wi73">[Wi73]</a>) have been added to the language. IN can be
-            used instead of VAR for constant variable parameters. The foreign function
-            interface (FFI) is a regular feature of the language.</p>
+            <a href="#Wi73">[Wi73]</a>), type-bound procedure types and explicit
+            bit operations have been added to the language. IN can be used instead
+            of VAR for constant variable parameters. The length of array type local
+            variable can be determined at runtime. The foreign function interface
+            (FFI) is a regular feature of the language.</p>
         </div>
         <div class="paragraph">
           <p>This report is not intended as a programmer&#8217;s tutorial. It is intentionally
@@ -1279,6 +1287,10 @@ array of char
                 </td>
               </tr>
             </table>
+          </div>
+          <div class="paragraph">
+            <p>At least array lengths between 1 and MAX(INTEGER) are supported, for
+              both constant and variable lengths.</p>
           </div>
         </div>
         <div class="sect2">
@@ -3943,7 +3955,7 @@ end Insert</pre>
           <p>A module is a collection of declarations of constants, types, variables,
             and procedures, together with a sequence of statements for the purpose
             of assigning initial values to the variables. A module constitutes a
-            text that is compilable as a unit.</p>
+            text that is compilable as a unit (compilation unit).</p>
         </div>
         <div class="literalblock">
           <div class="title">Syntax:</div>
@@ -4129,6 +4141,20 @@ DeclarationSequence2 = { CONST { ConstDeclaration [';'] }
           <p>Oberon+ includes the possibility to call functions from and exchange data
             with external C shared libraries. To avoid confusion with existing POINTER,
             ARRAY and RECORD types, Oberon+ includes special C compatible types.</p>
+        </div>
+        <div class="admonitionblock note">
+          <table>
+            <tr>
+              <td class="icon">
+                <div class="title">Note</div>
+              </td>
+              <td class="content">
+                Oberon+ has no SYSTEM module. Use the foreign function interface instead and the
+                predeclared BITop() function procedures to convert basic types to
+                byte arrays and vice versa.
+              </td>
+            </tr>
+          </table>
         </div>
         <div class="sect2">
           <h3 id="_external_library_modules">12.1. External Library Modules</h3>
@@ -4429,6 +4455,101 @@ DeclarationSequence3 =
                 </td>
               </tr>
             </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="sect1">
+      <h2 id="_source_code_directives">13. Source code directives</h2>
+      <div class="sectionbody">
+        <div class="paragraph">
+          <p>Source code directives are used to set configuration variables in the source
+            text and to select specific pieces of the source text to be compiled
+            (conditional compilation). Oberon+ uses the syntax recommended in
+            <a
+              href="#Oak95">[Oak95]</a>.</p>
+        </div>
+        <div class="sect2">
+          <h3 id="_configuration_variables">13.1. Configuration Variables</h3>
+          <div class="paragraph">
+            <p>Configuration variables can be set or unset in the source code using
+              the following syntax:</p>
+          </div>
+          <div class="literalblock">
+            <div class="title">Syntax:</div>
+            <div class="content">
+              <pre>directive = '&lt;*' ident ( '+' | '-' ) '*&gt;'</pre>
+            </div>
+          </div>
+          <div class="paragraph">
+            <p>Each variable is named by an ident which follows the syntax specified
+              in <a href="#_identifiers">Identifiers</a>. Variable names have compilation
+              unit scope which is separate from all other scopes of the program.
+              Configuration variable directives can be placed anywhere in the source
+              code. The directive only affects the present compilation unit, starting
+              from its position in the source code.</p>
+          </div>
+          <div class="literalblock">
+            <div class="title">Example:</div>
+            <div class="content">
+              <pre>&lt;* WIN32+ *&gt;
+&lt;* WIN64- *&gt;</pre>
+            </div>
+          </div>
+          <div class="admonitionblock note">
+            <table>
+              <tr>
+                <td class="icon">
+                  <div class="title">Note</div>
+                </td>
+                <td class="content">
+                  Usually the compiler provides the possibility to set configuration variables, e.g.
+                  via command line interface.
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+        <div class="sect2">
+          <h3 id="_conditional_compilation">13.2. Conditional compilation</h3>
+          <div class="paragraph">
+            <p>Conditional compilation directives can be placed anywhere in the source
+              code. The following syntax applies:</p>
+          </div>
+          <div class="literalblock">
+            <div class="title">Syntax:</div>
+            <div class="content">
+              <pre>directive = '&lt;*' [ scIf | scElsif | scElse | scEnd ] '*&gt;'
+scIf   	  = IF scExpr THEN
+scElsif   = ELSIF condition THEN
+scElse 	  = ELSE
+scEnd 	  = END
+condition = scTerm { OR scTerm }
+scTerm 	  = scFactor {'&amp;' scFactor}
+scFactor  = ident | '(' condition ')' | '~' scFactor</pre>
+            </div>
+          </div>
+          <div class="paragraph">
+            <p>An ELSIF or ELSE directive must be preceded by an IF or another ELSIF
+              directive. Each IF directive must be ended by an END directive. The
+              directives form sections of the source code. Only the section the condition
+              of which is TRUE (or the section framed by ELSE and END directive otherwise)
+              is visible to the compiler. Conditions are boolean expressions. Ident
+              refers to a configuration variable. When a configuration variable is
+              not explicitly set it is assumed to be FALSE. Each section can contain
+              nested conditional compilation directives.</p>
+          </div>
+          <div class="literalblock">
+            <div class="title">Example:</div>
+            <div class="content">
+              <pre>&lt;* if A then *&gt;
+  println("A")
+&lt;* elsif B &amp; ~C then *&gt;
+  println("B &amp; ~C")
+&lt;* else *&gt;
+  println("D")
+&lt;* end *&gt;</pre>
+            </div>
           </div>
         </div>
       </div>
@@ -4990,7 +5111,7 @@ DeclarationSequence2 =
                 <div class="title">Note</div>
               </td>
               <td class="content">
-                The <a href="#_foreign_function_interface">Foreign Function Interface</a>                syntax is not included here.
+                The <a href="#_foreign_function_interface">Foreign Function Interface</a>                and <a href="#_source_code_directives">Source code directives</a>                syntax is not included here.
               </td>
             </tr>
           </table>
@@ -5143,6 +5264,12 @@ end Unicode</code></pre>
                 <a id="Mo91"></a>[Mo91] Mössenböck, H.; Wirth, N. (1991). The Programming Language
                 Oberon-2. Structured Programming, 12(4):179-195, 1991. <a href="http://www.ssw.uni-linz.ac.at/Research/Papers/Oberon2.pdf"
                   class="bare">http://www.ssw.uni-linz.ac.at/Research/Papers/Oberon2.pdf</a>                (accessed 2020-11-16).</p>
+            </li>
+            <li>
+              <p>
+                <a id="Oak95"></a>[Oak95] Kirk, B. et al. (1995). The Oakwood Guidelines for Oberon-2
+                Compiler Developers. Revision 1A. <a href="https://web.archive.org/web/20171226172235/https://www.math.bas.bg/bantchev/place/oberon/oakwood-guidelines.pdf"
+                  class="bare">https://web.archive.org/web/20171226172235/https://www.math.bas.bg/bantchev/place/oberon/oakwood-guidelines.pdf</a>                (accessed 2022-04-26).</p>
             </li>
             <li>
               <p>
