@@ -17,7 +17,7 @@
     <div class="details">
       <span id="author" class="author">Rochus Keller</span><br>
       <span id="email" class="email"><a href="mailto:me@rochus-keller.ch">me@rochus-keller.ch</a></span><br>
-      <span id="revdate">2022-04-27</span>
+      <span id="revdate">2022-05-18</span>
       <br><span id="revremark">work in progress</span>
     </div>
     <div id="toc" class="toc2">
@@ -68,6 +68,7 @@
             <li><a href="#_loop_statements">9.9. Loop statements</a></li>
             <li><a href="#_return_and_exit_statements">9.10. Return and exit statements</a></li>
             <li><a href="#_with_statements">9.11. With statements</a></li>
+            <li><a href="#_exception_handling">9.12. Exception handling</a></li>
           </ul>
         </li>
         <li><a href="#_procedure_declarations">10. Procedure declarations</a>
@@ -145,11 +146,11 @@
         </div>
         <div class="paragraph">
           <p>Furthermore, enumeration types (known as <em>scalar types</em> in Pascal
-            <a href="#Wi73">[Wi73]</a>), type-bound procedure types and explicit
-            bit operations have been added to the language. IN can be used instead
-            of VAR for constant variable parameters. The length of array type local
-            variable can be determined at runtime. The foreign function interface
-            (FFI) is a regular feature of the language.</p>
+            <a href="#Wi73">[Wi73]</a>), type-bound procedure types, explicit bit
+            operations and exception handling have been added to the language. IN
+            can be used instead of VAR for constant variable parameters. The length
+            of array type local variable can be determined at runtime. The foreign
+            function interface (FFI) is a regular feature of the language.</p>
         </div>
         <div class="paragraph">
           <p>This report is not intended as a programmer&#8217;s tutorial. It is intentionally
@@ -899,35 +900,39 @@ identdef  = ident ['*' | '-']</pre>
                 <p class="tableblock">PACK</p>
               </td>
               <td class="tableblock halign-left valign-top">
+                <p class="tableblock">PCALL</p>
+              </td>
+              <td class="tableblock halign-left valign-top">
+                <p class="tableblock">RAISE</p>
+              </td>
+              <td class="tableblock halign-left valign-top">
                 <p class="tableblock">REAL</p>
               </td>
+            </tr>
+            <tr>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">ROR</p>
               </td>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">SET</p>
               </td>
-            </tr>
-            <tr>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">SHORT</p>
               </td>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">SHORTINT</p>
               </td>
+            </tr>
+            <tr>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">SIZE</p>
               </td>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">UNPK</p>
               </td>
-            </tr>
-            <tr>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">WCHR</p>
               </td>
-              <td class="tableblock halign-left valign-top"></td>
-              <td class="tableblock halign-left valign-top"></td>
               <td class="tableblock halign-left valign-top"></td>
             </tr>
           </tbody>
@@ -2160,9 +2165,12 @@ end</pre>
           </div>
           <div class="paragraph">
             <p>The type T of the case expression (case variable) may also be a record
-              or pointer type. Then the case labels must be extensions of T, and
-              in the statements S<sub>i</sub> labelled by T<sub>i</sub>, the case
-              variable is considered as of type T<sub>i</sub>.</p>
+              or pointer type. Then each case consists of exactly one case label
+              which must be an extension of T, and in the statements S<sub>i</sub>              labelled by T<sub>i</sub>, the case variable is considered as of type
+              T<sub>i</sub>. If the case variable is of POINTER type, then one case
+              label can also be NIL. The evaluation order corresponds to the case
+              label order; the first statement sequence is executed whose case label
+              meets the condition.</p>
           </div>
           <div class="literalblock">
             <div class="title">Syntax:</div>
@@ -2195,9 +2203,10 @@ type R  = record a: integer end
 	 P2 = ^R2
 var p: P
 case p of
-	P0: p.b := 10 |
-	P1: p.b := 2.5 |
-	P2: p.b := {0, 2}
+	| P0: p.b := 10
+	| P1: p.b := 2.5
+	| P2: p.b := {0, 2}
+	| NIL: p.b := {}
 end</pre>
             </div>
           </div>
@@ -2441,6 +2450,66 @@ Guard         = qualident ':' qualident</pre>
             <div class="title">Example:</div>
             <div class="content">
               <pre>with t: CenterTree do i := t.width; c := t.subnode end</pre>
+            </div>
+          </div>
+        </div>
+        <div class="sect2">
+          <h3 id="_exception_handling">9.12. Exception handling</h3>
+          <div class="paragraph">
+            <p>Exception handling in Oberon+ is implemented using the predeclared procedures
+              PCALL and RAISE (see <a href="#_predeclared_proper_procedures">Predeclared proper procedures</a>),
+              without any special syntax. There are no predefined exceptions.</p>
+          </div>
+          <div class="paragraph">
+            <p>An exception is a record allocated with NEW(). The pointer to this record
+              is passed as an actual argument to RAISE. If the pointer is nil the
+              program execution aborts. RAISE may be called without an argument in
+              which case the compiler provides an allocated record the exact type
+              of which is not relevant. RAISE never returns, but control is transferred
+              from the place where RAISE is called to the nearest dynamically-enclosing
+              call of PCALL. When calling RAISE without a dynamically-enclosing call
+              of PCALL the program execution is aborted.</p>
+          </div>
+          <div class="paragraph">
+            <p>PCALL executes a protected call of the procedure or procedure type P.
+              P is passed as the second argument to PCALL. P cannot have a return
+              type. P can be a type-bound procedure type. P can be a nested procedure,
+              even if it accesses local variables or parameters of an outer procedure.
+              If P has formal parameters the corresponding actual parameters are
+              passed to PCALL immediately after P. The actual parameters must be
+              <em>parameter compatible</em> with the formal parameters of P (see
+              <a href="#_definition_of_terms">Definition of terms</a>). The first
+              parameter R of PCALL is a POINTER TO ANYREC; if RAISE(E) is called
+              in the course of P, then R is set to E; otherwise R is set to NIL.
+              The state of VAR parameters of P or local variables or parameters of
+              an outer procedure accessed by P is non-deterministic in case RAISE
+              is called in the course of P.</p>
+          </div>
+          <div class="listingblock">
+            <div class="title">Listing 2. Example:</div>
+            <div class="content">
+              <pre>module ExceptionExample
+  type Exception = record end
+  proc Print(in str: array of char)
+    var e: pointer to Exception
+  begin
+    println(str)
+    new(e)
+    raise(e)
+    println("this is not printed")
+  end Print
+  var res: pointer to anyrec
+begin
+  pcall(res, Print, "Hello World")
+  case res of
+  | Exception: println("got Exception")
+  | anyrec: println("got anyrec")
+  | nil: println("no exception")
+  else
+    println("unknown exception")
+    // could call raise(res) here to propagate the exception
+  end
+end ExceptionExample</pre>
             </div>
           </div>
         </div>
@@ -2999,6 +3068,18 @@ end Insert</pre>
                   </td>
                   <td class="tableblock halign-left valign-top">
                     <p class="tableblock">convert C pointer to integer (see <a href="#_c_types">C Types</a>)</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="tableblock halign-left valign-top"></td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">T: cpointer to void, x: integer type</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">T</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">reinterpret integer x as a C pointer (see <a href="#_c_types">C Types</a>)</p>
                   </td>
                 </tr>
                 <tr>
@@ -3858,6 +3939,31 @@ end Insert</pre>
                     <p class="tableblock">x<sub>0</sub>..x<sub>n</sub></p>
                   </td>
                 </tr>
+                <tr>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">PCALL(e,p,a<sub>0</sub>,&#8230;&#8203;,a<sub>n</sub>)</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">VAR e: pointer to anyrec; p: proper procedure type; a<sub>i</sub>:
+                      actual parameters</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">call procedure type p with arguments a<sub>0</sub>&#8230;&#8203;a<sub>n</sub>                      corresponding to the parameter list of p; e becomes nil in
+                      normal case and gets the pointer passed to RAISE() otherwise</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">RAISE(e)</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">e: pointer to anyrec</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">terminates the last protected function called and returns e as
+                      the exception value; RAISE() never returns</p>
+                  </td>
+                </tr>
               </tbody>
             </table>
             <div class="paragraph">
@@ -4001,7 +4107,7 @@ ImportPath = { ident '.' }</pre>
             loaded. It follows that cyclic import of modules is illegal.</p>
         </div>
         <div id="oberon-2-example" class="listingblock">
-          <div class="title">Listing 2. Example with original Oberon-2 syntax</div>
+          <div class="title">Listing 3. Example with original Oberon-2 syntax</div>
           <div class="content">
             <pre class="highlight"><code class="language-oberon" data-lang="oberon">MODULE Lists;
 	IMPORT Out;
@@ -4031,7 +4137,7 @@ END Lists.</code></pre>
           </div>
         </div>
         <div class="listingblock">
-          <div class="title">Listing 3. <a href="#oberon-2-example">Same example</a> with syntactic
+          <div class="title">Listing 4. <a href="#oberon-2-example">Same example</a> with syntactic
             simplifications</div>
           <div class="content">
             <pre class="highlight"><code class="language-oberon" data-lang="oberon">module Lists2
@@ -5122,7 +5228,7 @@ DeclarationSequence2 =
       <h2 id="_more_code_examples">Appendix C: More Code Examples</h2>
       <div class="sectionbody">
         <div class="listingblock">
-          <div class="title">Listing 4. Procedural programming</div>
+          <div class="title">Listing 5. Procedural programming</div>
           <div class="content">
             <pre class="highlight"><code class="language-oberon" data-lang="oberon">module Fibonacci
   proc calc*(n : integer): integer
@@ -5146,7 +5252,7 @@ end Fibonacci</code></pre>
           </div>
         </div>
         <div class="listingblock">
-          <div class="title">Listing 5. Generic programming</div>
+          <div class="title">Listing 6. Generic programming</div>
           <div class="content">
             <pre class="highlight"><code class="language-oberon" data-lang="oberon">module Collections(T)
   type Deque* = pointer to record
@@ -5182,7 +5288,7 @@ end Collections</code></pre>
           </div>
         </div>
         <div class="listingblock">
-          <div class="title">Listing 6. Object-oriented programming</div>
+          <div class="title">Listing 7. Object-oriented programming</div>
           <div class="content">
             <pre class="highlight"><code class="language-oberon" data-lang="oberon">module Drawing
   import F := Fibonacci
@@ -5233,7 +5339,7 @@ end Drawing</code></pre>
           </div>
         </div>
         <div class="listingblock">
-          <div class="title">Listing 7. Unicode support</div>
+          <div class="title">Listing 8. Unicode support</div>
           <div class="content">
             <pre class="highlight"><code class="language-oberon" data-lang="oberon">module Unicode
   var
@@ -5304,8 +5410,7 @@ end Unicode</code></pre>
         <div class="paragraph">
           <p>TODO: - array literals, e.g. [ 1, 2, 3 ] or [ [1,2], [3,4], [5,6] ] or
             like ISO Modula like Array1dType{ 1,2,3 } or Array2dType{ {1,2}, {3,4},
-            {5,6} } which would also support record literals - pcall, protected call
-            of a procedure and built-in throw(integer) function - allow to register
+            {5,6} } which would also support record literals - allow to register
             a type-bound procedure as a finalzier for a pointer to record - literals
             and procedure refs as generic arguments, e.g. like ISO Modula - means
             to avoid record assignment - underscores in number literals</p>

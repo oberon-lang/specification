@@ -11,7 +11,7 @@
 = The Programming Language Oberon+
 :author: Rochus Keller 
 :email: me@rochus-keller.ch
-:revdate: 2022-04-27
+:revdate: 2022-05-18
 :revremark: work in progress
 :doctype: article 
 :listing-caption: Listing
@@ -30,7 +30,7 @@ A major design goal of Oberon in 1987 was to make the language as simple as poss
  
 The language allows several simplifications compared to previous Oberon versions: keywords can be written in lower case, all semicolons are optional, and for some keywords there are shorter variants; a declaration sequence can contain more than one CONST, TYPE and VAR section in arbitrary order, interleaved with procedures. 
 
-Furthermore, enumeration types (known as _scalar types_ in Pascal <<Wi73>>), type-bound procedure types and explicit bit operations have been added to the language. IN can be used instead of VAR for constant variable parameters. The length of array type local variable can be determined at runtime. The foreign function interface (FFI) is a regular feature of the language.
+Furthermore, enumeration types (known as _scalar types_ in Pascal <<Wi73>>), type-bound procedure types, explicit bit operations and exception handling have been added to the language. IN can be used instead of VAR for constant variable parameters. The length of array type local variable can be determined at runtime. The foreign function interface (FFI) is a regular feature of the language.
 
 This report is not intended as a programmer's tutorial. It is intentionally kept concise. Its function is to serve as a reference for programmers, implementors, and tutorial writers. What remains unsaid is mostly left so intentionally, either because it can be derived from stated rules of the language, or because it would require to commit the definition when a general commitment appears as unwise.
 
@@ -322,6 +322,8 @@ The following identifiers are predeclared; their meaning is defined in the indic
 |ODD 
 |ORD 
 |PACK
+|PCALL
+|RAISE
 |REAL 
 |ROR
 |SET 
@@ -399,11 +401,6 @@ The basic types are denoted by predeclared identifiers. The associated operators
 | LONGINT   |  8 byte | the integers between MIN(LONGINT) and MAX(LONGINT)
 | REAL      |  32 bit | an IEEE 754 floating point number
 | LONGREAL  |  64 bit | an IEEE 754 floating point number
-//| I16, i16 |  the integers between -32'768 and 32'767
-//| I32, i32 |  the integers between -2'147'483'648 and 2'147'483'647
-//| I64, i64 |  the integers between -9'223'372'036'854'775'808 and 9'223'372'036'854'775'807
-//| F32, f32 |  32 bit IEEE 754 floating point number between -3.4e38 and 3.4e38
-//| F64, f64 |  64 bit IEEE 754 floating point number between -1.8e308 and 1.8e308
 | SET       |  4 byte | the sets of integers between 0 and MAX(SET)
 | WCHAR	 | 2 byte | the characters of the Unicode BMP set (0x .. 0d7ffx, 0f900x .. 0ffffx)
 |====================================================
@@ -827,7 +824,7 @@ end
 === Case statements
 Case statements specify the selection and execution of a statement sequence according to the value of an expression. First the case expression is evaluated, then that statement sequence is executed whose case label list contains the obtained value. The case expression must either be of an integer type that includes the types of all case labels, or an enumeration type with all case labels being valid members of this type, or both the case expression and the case labels must be of type CHAR. Case labels are constants, and no value must occur more than once. If the value of the expression does not occur as a label of any case, the statement sequence following the symbol ELSE is selected, if there is one, otherwise the program is aborted.
 
-The type T of the case expression (case variable) may also be a record or pointer type. Then the case labels must be extensions of T, and in the statements S~i~ labelled by T~i~, the case variable is considered as of type T~i~.
+The type T of the case expression (case variable) may also be a record or pointer type. Then each case consists of exactly one case label which must be an extension of T, and in the statements S~i~ labelled by T~i~, the case variable is considered as of type T~i~. If the case variable is of POINTER type, then one case label can also be NIL. The evaluation order corresponds to the case label order; the first statement sequence is executed whose case label meets the condition.
 
 .Syntax:
 ....
@@ -858,9 +855,10 @@ type R  = record a: integer end
 	 P2 = ^R2
 var p: P
 case p of
-	P0: p.b := 10 |
-	P1: p.b := 2.5 |
-	P2: p.b := {0, 2}
+	| P0: p.b := 10
+	| P1: p.b := 2.5
+	| P2: p.b := {0, 2}
+	| NIL: p.b := {}
 end
 ....
 
@@ -1003,6 +1001,41 @@ has the following meaning: if the dynamic type of `v` is T1, then the statement 
 ....
 with t: CenterTree do i := t.width; c := t.subnode end
 ....
+=== Exception handling
+
+Exception handling in Oberon+ is implemented using the predeclared procedures PCALL and RAISE (see <<Predeclared proper procedures>>), without any special syntax. There are no predefined exceptions. 
+
+An exception is a record allocated with NEW(). The pointer to this record is passed as an actual argument to RAISE. If the pointer is nil the program execution aborts. RAISE may be called without an argument in which case the compiler provides an allocated record the exact type of which is not relevant. RAISE never returns, but control is transferred from the place where RAISE is called to the nearest dynamically-enclosing call of PCALL. When calling RAISE without a dynamically-enclosing call of PCALL the program execution is aborted.
+
+PCALL executes a protected call of the procedure or procedure type P. P is passed as the second argument to PCALL. P cannot have a return type. P can be a type-bound procedure type. P can be a nested procedure, even if it accesses local variables or parameters of an outer procedure. If P has formal parameters the corresponding actual parameters are passed to PCALL immediately after P. The actual parameters must be _parameter compatible_ with the formal parameters of P (see <<Definition of terms>>). The first parameter R of PCALL is a POINTER TO ANYREC; if RAISE(E) is called in the course of P, then R is set to E; otherwise R is set to NIL. The state of VAR parameters of P or local variables or parameters of an outer procedure accessed by P is non-deterministic in case RAISE is called in the course of P.
+
+
+.Example:
+----
+module ExceptionExample
+  type Exception = record end
+  proc Print(in str: array of char)
+    var e: pointer to Exception 
+  begin
+    println(str)
+    new(e)
+    raise(e)
+    println("this is not printed")
+  end Print
+  var res: pointer to anyrec
+begin
+  pcall(res, Print, "Hello World")
+  case res of
+  | Exception: println("got Exception")
+  | anyrec: println("got anyrec")
+  | nil: println("no exception")
+  else
+    println("unknown exception")
+    // could call raise(res) here to propagate the exception
+  end
+end ExceptionExample
+----
+
 
 == Procedure declarations
 A procedure declaration consists of a procedure heading and a procedure body. The heading specifies the procedure identifier and the formal parameters (see <<Formal Parameters>>). For type-bound procedures it also specifies the receiver parameter. The body contains declarations and statements. The procedure identifier must be repeated at the end of the procedure declaration unless it has no body.
@@ -1187,6 +1220,7 @@ The following table lists the predeclared procedures. Some are generic procedure
 |			 |T,x: integer type    |T              |convert integer types, accept possible loss of information
 |			 |T, x: cpointer to cstruct or void|T  |unsafe cast of a C pointer (see <<C Types>>)
 |			 |T: integer type, x: cpointer to void|T  |convert C pointer to integer (see <<C Types>>)
+|			 |T: cpointer to void, x: integer type|T  |reinterpret integer x as a C pointer (see <<C Types>>)
 |CHR(x)      |integer type         |CHAR           |Latin-1 character with ordinal number x
 |DEFAULT(T)  |T = basic type       |T              |zero for numeric and character types, false for boolean, empty set
 |            |T = enumeration type |T              |same as MIN(T)
@@ -1278,6 +1312,8 @@ The Oberon and Oberon-2 built-in function ASH was replaced by ASR, LSL and ROR i
 |                   |fixed array                   |
 |NEW(v,x~0~,...,x~n~)   |v: pointer to open array  |allocate v^ with lengths
 |                   |x~i~: integer type              |x~0~..x~n~
+|PCALL(e,p,a~0~,...,a~n~)|VAR e: pointer to anyrec; p: proper procedure type; a~i~: actual parameters |call procedure type p with arguments a~0~...a~n~ corresponding to the parameter list of p; e becomes nil in normal case and gets the pointer passed to RAISE() otherwise
+|RAISE(e)			|e: pointer to anyrec		   |terminates the last protected function called and returns e as the exception value; RAISE() never returns
 |===
 
 In `ASSERT(x, n)` and `HALT(n)`, the interpretation of `n` is left to the underlying system implementation. 
@@ -1922,6 +1958,7 @@ end Unicode
 ----
 
 
+
 [appendix]
 // [bibliography]
 == References
@@ -1938,7 +1975,6 @@ TODO:
 - array literals, e.g. [ 1, 2, 3 ] or [ [1,2], [3,4], [5,6] ]
   or like ISO Modula like Array1dType{ 1,2,3 } or Array2dType{ {1,2}, {3,4}, {5,6} }
   which would also support record literals
-- pcall, protected call of a procedure and built-in throw(integer) function
 - allow to register a type-bound procedure as a finalzier for a pointer to record
 - literals and procedure refs as generic arguments, e.g. like ISO Modula
 - means to avoid record assignment
