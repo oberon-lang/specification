@@ -11,7 +11,7 @@
 = The Programming Language Oberon+
 :author: Rochus Keller 
 :email: me@rochus-keller.ch
-:revdate: 2022-05-18
+:revdate: 2022-06-06
 :revremark: work in progress
 :doctype: article 
 :listing-caption: Listing
@@ -30,7 +30,7 @@ A major design goal of Oberon in 1987 was to make the language as simple as poss
  
 The language allows several simplifications compared to previous Oberon versions: keywords can be written in lower case, all semicolons are optional, and for some keywords there are shorter variants; a declaration sequence can contain more than one CONST, TYPE and VAR section in arbitrary order, interleaved with procedures. 
 
-Furthermore, enumeration types (known as _scalar types_ in Pascal <<Wi73>>), type-bound procedure types, explicit bit operations and exception handling have been added to the language. IN can be used instead of VAR for constant variable parameters. The length of array type local variable can be determined at runtime. The foreign function interface (FFI) is a regular feature of the language.
+Furthermore, enumeration types (known as _scalar types_ in Pascal <<Wi73>>), type-bound procedure types, explicit bit operations and exception handling have been added to the language. IN can be used instead of VAR for constant variable parameters. The length of array type local variable can be specified at runtime (VLA). The foreign function interface (FFI) is a regular feature of the language.
 
 This report is not intended as a programmer's tutorial. It is intentionally kept concise. Its function is to serve as a reference for programmers, implementors, and tutorial writers. What remains unsaid is mostly left so intentionally, either because it can be derived from stated rules of the language, or because it would require to commit the definition when a general commitment appears as unwise.
 
@@ -39,35 +39,35 @@ This report is not intended as a programmer's tutorial. It is intentionally kept
 [source,oberon]
 ----
 module Lists(T)
-    type
-        List*     = ^record
-            value* : T
-            next*  : List
-        end
+  type
+    List* = ^record
+               value* : T
+               next*  : List
+             end
 
-    proc (l : List) Add* (v : T)
-    begin
-    	new( l.next )
-    	l.next.value := v
-    end Add
+  proc (l : List) Add* (v : T)
+  begin
+    new( l.next )
+    l.next.value := v
+  end Add
 
-    proc (l : List) Print*()
-    begin
-    	println(l.value)
-    end Print
+  proc (l : List) Print*()
+  begin
+    println(l.value)
+  end Print
 end Lists
 
 module ListTest
-	import
-		L := Lists(integer)
-	var
-		l : L.List
-	begin
-		new(l)
-		l.value := 123
-		l.Add(456)
-		l.Print()
-		l.next.Print()
+  import
+    L := Lists(integer)
+  var
+    l : L.List
+  begin
+    new(l)
+    l.value := 123
+    l.Add(456)
+    l.Print()
+    l.next.Print()
 end ListTest
 ----
 
@@ -476,16 +476,19 @@ FieldList  = [ IdentList ':' type ]
 IdentList  = identdef { [','] identdef }
 ....
 
-Record types are extensible, i.e. a record type or a pointer to a record can be declared as an extension of another record type. In the example
+Record types are extensible, i.e. a record type can be declared as an extension of another record type. In the example
 
 ....
 T0 = record x: integer end
 T1 = record (T0) y: real end
 ....
 
-T1 is a (direct) _extension_ of T0 and T0 is the (direct) base type of T1 (see <<Definition of terms>>). An extended type T1 consists of the fields of its base type and of the fields which are declared in T1. In general all identifiers declared in the extended record must be different from the identifiers declared in its base type record(s). A pointer field of the base record can be re-declared in the extended record with a pointer type which is an extension of the corresponding base record field type footnote:[this corresponds to the implementation of the Blackbox framework 1.7, see https://blackboxframework.org <<Om01>>].
+T1 is a (direct) _extension_ of T0 and T0 is the (direct) base type of T1 (see <<Definition of terms>>). An extended type T1 consists of the fields of its base type and of the fields which are declared in T1. In general all identifiers declared in the extended record must be different from the identifiers declared in its base type record(s). 
 
-Alternatively, a pointer to record type can be specified as the base type. The record base type of the pointer is used as the base type of the declared record in this case.
+// TODO shall we really support this:
+// A pointer field of the base record can be re-declared in the extended record with a pointer type which is an extension of the corresponding base record field type footnote:[this corresponds to the implementation of the Blackbox framework 1.7, see https://blackboxframework.org <<Om01>>].
+
+Alternatively, a pointer to record type can be used as the BaseType; in this case the record base type of the pointer is used as the base type of the declared record.
 
 Each record is implicitly an extension of the predeclared type ANYREC. ANYREC does not contain any fields and can only be used in pointer and variable parameter declarations.
 
@@ -503,7 +506,7 @@ end
 ....
 
 === Pointer types
-Variables of a pointer type P assume as values pointers to variables of some type T. T is called the pointer base type of P and must be a record or array type. Pointer types adopt the extension relation of their pointer base types: if a type T1 is an extension of T, and P1 is of type `POINTER TO T1`, then P1 is also an extension of P.
+Variables of a pointer type P assume as values pointers to variables of some type T. T is called the pointer base type of P and must be a record or array type. Pointer types adopt the _extension_ relation of their pointer base types: if a type T1 is an extension of T, and P1 is of type `POINTER TO T1`, then P1 is also an extension of P (see <<Definition of terms>>).
 
 .Syntax:
 ....
@@ -697,8 +700,8 @@ A set constructor defines the value of a set by listing its elements between cur
 
 Relations yield a BOOLEAN result. The relations `=`, `\#`, `<`, `\<=`, `>`, and `>=` apply to the numeric types, as well as enumerations, CHAR, strings, and CHAR arrays containing `0x` as a terminator. The relations `=` and `#` also apply to BOOLEAN and SET, as well as to pointer and procedure types (including the value NIL). `x IN s` stands for _x is an element of s_. `x` must be of an integer type, and `s` of type SET. `v IS T` stands for _the dynamic type of `v` is T (or an extension of T )_ and is called a type test. It is applicable if
 
-. `v` is a variable parameter of record type, or `v` is a record pointer (which can be NIL), and if
-. T is an extension of the static type of `v`.
+. `v` is a variable parameter of record type, or `v` is a pointer to record variable (which can be NIL), and if
+. T is an _extension_ of the static type of `v` (see <<Definition of terms>>).
 
 .Examples:
 ....
@@ -824,11 +827,11 @@ end
 === Case statements
 Case statements specify the selection and execution of a statement sequence according to the value of an expression. First the case expression is evaluated, then that statement sequence is executed whose case label list contains the obtained value. The case expression must either be of an integer type that includes the types of all case labels, or an enumeration type with all case labels being valid members of this type, or both the case expression and the case labels must be of type CHAR. Case labels are constants, and no value must occur more than once. If the value of the expression does not occur as a label of any case, the statement sequence following the symbol ELSE is selected, if there is one, otherwise the program is aborted.
 
-The type T of the case expression (case variable) may also be a record or pointer type. Then each case consists of exactly one case label which must be an extension of T, and in the statements S~i~ labelled by T~i~, the case variable is considered as of type T~i~. If the case variable is of POINTER type, then one case label can also be NIL. The evaluation order corresponds to the case label order; the first statement sequence is executed whose case label meets the condition.
+The type T of the case expression (case variable) may also be a variable parameter of record type or a pointer to record variable. Then each case consists of exactly one case label which must be an _extension_ of T (see <<Definition of terms>>), and in the statements S~i~ labelled by T~i~, the case variable is considered as of type T~i~. If the case variable is of POINTER type, then one case label can also be NIL. The evaluation order corresponds to the case label order; the first statement sequence is executed whose case label meets the condition.
 
 .Syntax:
 ....
-CaseStatement = CASE expression OF Case { '|' Case }
+CaseStatement = CASE expression OF ['|'] Case { '|' Case }
 	            [ ELSE StatementSequence ] END
 Case          = [ CaseLabelList ':' StatementSequence ]
 CaseLabelList = LabelRange { ',' LabelRange }
@@ -983,19 +986,19 @@ With statements execute a statement sequence depending on the result of a type t
 
 .Syntax:
 ....
-WithStatement = WITH Guard DO StatementSequence
+WithStatement = WITH ['|'] Guard DO StatementSequence
 	            { '|' Guard DO StatementSequence}
 	            [ ELSE StatementSequence ] END
 Guard         = qualident ':' qualident
 ....
 
-If `v` is a variable parameter of record type or a pointer variable, and if it is of a static type T0, the statement
+If `v` is a variable parameter of record type or a pointer to record variable, and if it is of a static type T0, the statement
 
 ....
 with v: T1 do S1 | v: T2 do S2 else S3 end
 ....
 
-has the following meaning: if the dynamic type of `v` is T1, then the statement sequence S1 is executed where `v` is regarded as if it had the static type T1; else if the dynamic type of `v` is T2, then S2 is executed where `v` is regarded as if it had the static type T2; else S3 is executed. T1 and T2 must be extensions of T0. If no type test is satisfied and if an else clause is missing the program is aborted.
+has the following meaning: if the dynamic type of `v` is T1, then the statement sequence S1 is executed where `v` is regarded as if it had the static type T1; else if the dynamic type of `v` is T2, then S2 is executed where `v` is regarded as if it had the static type T2; else S3 is executed. T1 and T2 must be _extensions_ of T0 (see <<Definition of terms>>). If no type test is satisfied and if an else clause is missing the program is aborted.
 
 .Example:
 ....
@@ -1528,7 +1531,7 @@ ARRAY and RECORD types cannot be used in external library modules, but it is per
  
 POINTER and CPOINTER are disjoint in what they can point to and it is not possible to assign from a POINTER to a CPOINTER or vice versa.
 
-A CARRAY and an ARRAY are only assignment compatible if both element types are either CHAR or WCHAR.
+A CARRAY and an ARRAY are only assignment compatible if both element types are either CHAR or WCHAR. A CARRAY cannot be passed to a parameter of ARRAY type.
 
 === External procedures
 
@@ -1651,6 +1654,8 @@ Type extension (record)::
 Type extension (pointer)::
     If P~a~ = POINTER TO T~a~ and P~b~ = POINTER TO T~b~ , P~b~ is an extension of P~a~ (P~a~ is a base type of P~b~) if T~b~ is an extension of T~a~. 
     
+[NOTE]
+The extension relation is between record types or between pointer to record types; there is no extension relation between a pointer to record and a record type or between a record and a pointer to record type.
 
 Assignment compatible::
     An expression e of type T~e~ is assignment compatible with a variable v of type T~v~ if one of the following conditions hold:
@@ -1774,7 +1779,7 @@ IfStatement = IF expression THEN StatementSequence
 	{ElsifStatement} [ElseStatement] END
 ElsifStatement = ELSIF expression THEN StatementSequence 
 ElseStatement = ELSE StatementSequence
-CaseStatement = CASE expression OF Case { '|' Case }
+CaseStatement = CASE expression OF ['|'] Case { '|' Case }
 	[ ELSE StatementSequence ] END
 Case = [ CaseLabelList ':' StatementSequence ]
 CaseLabelList = LabelRange { ',' LabelRange }
@@ -1786,7 +1791,7 @@ ElsifStatement2 = ELSIF expression DO StatementSequence
 RepeatStatement = REPEAT StatementSequence UNTIL expression
 ForStatement = FOR ident ':=' expression TO expression 
 	[ BY ConstExpression ] DO StatementSequence END
-WithStatement = WITH Guard DO StatementSequence
+WithStatement = WITH ['|'] Guard DO StatementSequence
 	{ '|' Guard DO StatementSequence}
 	[ ELSE StatementSequence ] END
 Guard = qualident ':' qualident
@@ -1977,5 +1982,6 @@ TODO:
   which would also support record literals
 - allow to register a type-bound procedure as a finalzier for a pointer to record
 - literals and procedure refs as generic arguments, e.g. like ISO Modula
+- combine generic modules with source code directives so that the directive can check the type of a type param; add built-in compile time functions to check for non anyrec descendant types (isinteger, isnumber, isreal, isboolean)
 - means to avoid record assignment
 - underscores in number literals

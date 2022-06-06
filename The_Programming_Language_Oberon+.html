@@ -17,7 +17,7 @@
     <div class="details">
       <span id="author" class="author">Rochus Keller</span><br>
       <span id="email" class="email"><a href="mailto:me@rochus-keller.ch">me@rochus-keller.ch</a></span><br>
-      <span id="revdate">2022-05-18</span>
+      <span id="revdate">2022-06-06</span>
       <br><span id="revremark">work in progress</span>
     </div>
     <div id="toc" class="toc2">
@@ -149,7 +149,7 @@
             <a href="#Wi73">[Wi73]</a>), type-bound procedure types, explicit bit
             operations and exception handling have been added to the language. IN
             can be used instead of VAR for constant variable parameters. The length
-            of array type local variable can be determined at runtime. The foreign
+            of array type local variable can be specified at runtime (VLA). The foreign
             function interface (FFI) is a regular feature of the language.</p>
         </div>
         <div class="paragraph">
@@ -165,35 +165,35 @@
             parameters</div>
           <div class="content">
             <pre class="highlight"><code class="language-oberon" data-lang="oberon">module Lists(T)
-    type
-        List*     = ^record
-            value* : T
-            next*  : List
-        end
+  type
+    List* = ^record
+               value* : T
+               next*  : List
+             end
 
-    proc (l : List) Add* (v : T)
-    begin
-    	new( l.next )
-    	l.next.value := v
-    end Add
+  proc (l : List) Add* (v : T)
+  begin
+    new( l.next )
+    l.next.value := v
+  end Add
 
-    proc (l : List) Print*()
-    begin
-    	println(l.value)
-    end Print
+  proc (l : List) Print*()
+  begin
+    println(l.value)
+  end Print
 end Lists
 
 module ListTest
-	import
-		L := Lists(integer)
-	var
-		l : L.List
-	begin
-		new(l)
-		l.value := 123
-		l.Add(456)
-		l.Print()
-		l.next.Print()
+  import
+    L := Lists(integer)
+  var
+    l : L.List
+  begin
+    new(l)
+    l.value := 123
+    l.Add(456)
+    l.Print()
+    l.next.Print()
 end ListTest</code></pre>
           </div>
         </div>
@@ -1322,8 +1322,8 @@ IdentList  = identdef { [','] identdef }</pre>
             </div>
           </div>
           <div class="paragraph">
-            <p>Record types are extensible, i.e. a record type or a pointer to a record
-              can be declared as an extension of another record type. In the example</p>
+            <p>Record types are extensible, i.e. a record type can be declared as an
+              extension of another record type. In the example</p>
           </div>
           <div class="literalblock">
             <div class="content">
@@ -1337,14 +1337,12 @@ T1 = record (T0) y: real end</pre>
               An extended type T1 consists of the fields of its base type and of
               the fields which are declared in T1. In general all identifiers declared
               in the extended record must be different from the identifiers declared
-              in its base type record(s). A pointer field of the base record can
-              be re-declared in the extended record with a pointer type which is
-              an extension of the corresponding base record field type <sup class="footnote">[<a id="_footnoteref_2" class="footnote" href="#_footnote_2" title="View footnote.">2</a>]</sup>.</p>
+              in its base type record(s).</p>
           </div>
           <div class="paragraph">
-            <p>Alternatively, a pointer to record type can be specified as the base
-              type. The record base type of the pointer is used as the base type
-              of the declared record in this case.</p>
+            <p>Alternatively, a pointer to record type can be used as the BaseType;
+              in this case the record base type of the pointer is used as the base
+              type of the declared record.</p>
           </div>
           <div class="paragraph">
             <p>Each record is implicitly an extension of the predeclared type ANYREC.
@@ -1371,10 +1369,9 @@ end</pre>
           <div class="paragraph">
             <p>Variables of a pointer type P assume as values pointers to variables
               of some type T. T is called the pointer base type of P and must be
-              a record or array type. Pointer types adopt the extension relation
-              of their pointer base types: if a type T1 is an extension of T, and
-              P1 is of type <code>POINTER TO T1</code>, then P1 is also an extension
-              of P.</p>
+              a record or array type. Pointer types adopt the <em>extension</em>              relation of their pointer base types: if a type T1 is an extension
+              of T, and P1 is of type <code>POINTER TO T1</code>, then P1 is also
+              an extension of P (see <a href="#_definition_of_terms">Definition of terms</a>).</p>
           </div>
           <div class="literalblock">
             <div class="title">Syntax:</div>
@@ -1550,7 +1547,7 @@ ExpList    = expression {',' expression}</pre>
             <p>Dereferencing is also implied if a pointer is assigned to a variable
               of a record or array type, if a pointer is used as actual parameter
               for a formal parameter of a record or array type, or if a pointer is
-              used as argument of the standard procedure LEN <sup class="footnote">[<a id="_footnoteref_3" class="footnote" href="#_footnote_3" title="View footnote.">3</a>]</sup>.</p>
+              used as argument of the standard procedure LEN <sup class="footnote">[<a id="_footnoteref_2" class="footnote" href="#_footnote_2" title="View footnote.">2</a>]</sup>.</p>
           </div>
           <div class="paragraph">
             <p>If <code>a</code> or <code>r</code> are read-only, then also <code>a[e]</code>              and <code>r.f</code> are read-only.</p>
@@ -1914,10 +1911,10 @@ element          = expression ['..' expression]</pre>
             <div class="olist arabic">
               <ol class="arabic">
                 <li>
-                  <p><code>v</code> is a variable parameter of record type, or <code>v</code>                    is a record pointer (which can be NIL), and if</p>
+                  <p><code>v</code> is a variable parameter of record type, or <code>v</code>                    is a pointer to record variable (which can be NIL), and if</p>
                 </li>
                 <li>
-                  <p>T is an extension of the static type of <code>v</code>.</p>
+                  <p>T is an <em>extension</em> of the static type of <code>v</code>                    (see <a href="#_definition_of_terms">Definition of terms</a>).</p>
                 </li>
               </ol>
             </div>
@@ -2164,18 +2161,19 @@ end</pre>
               is one, otherwise the program is aborted.</p>
           </div>
           <div class="paragraph">
-            <p>The type T of the case expression (case variable) may also be a record
-              or pointer type. Then each case consists of exactly one case label
-              which must be an extension of T, and in the statements S<sub>i</sub>              labelled by T<sub>i</sub>, the case variable is considered as of type
-              T<sub>i</sub>. If the case variable is of POINTER type, then one case
-              label can also be NIL. The evaluation order corresponds to the case
-              label order; the first statement sequence is executed whose case label
-              meets the condition.</p>
+            <p>The type T of the case expression (case variable) may also be a variable
+              parameter of record type or a pointer to record variable. Then each
+              case consists of exactly one case label which must be an <em>extension</em>              of T (see <a href="#_definition_of_terms">Definition of terms</a>),
+              and in the statements S<sub>i</sub> labelled by T<sub>i</sub>, the
+              case variable is considered as of type T<sub>i</sub>. If the case variable
+              is of POINTER type, then one case label can also be NIL. The evaluation
+              order corresponds to the case label order; the first statement sequence
+              is executed whose case label meets the condition.</p>
           </div>
           <div class="literalblock">
             <div class="title">Syntax:</div>
             <div class="content">
-              <pre>CaseStatement = CASE expression OF Case { '|' Case }
+              <pre>CaseStatement = CASE expression OF ['|'] Case { '|' Case }
 	            [ ELSE StatementSequence ] END
 Case          = [ CaseLabelList ':' StatementSequence ]
 CaseLabelList = LabelRange { ',' LabelRange }
@@ -2422,7 +2420,7 @@ ExitStatement   = EXIT</pre>
           <div class="literalblock">
             <div class="title">Syntax:</div>
             <div class="content">
-              <pre>WithStatement = WITH Guard DO StatementSequence
+              <pre>WithStatement = WITH ['|'] Guard DO StatementSequence
 	            { '|' Guard DO StatementSequence}
 	            [ ELSE StatementSequence ] END
 Guard         = qualident ':' qualident</pre>
@@ -2430,7 +2428,7 @@ Guard         = qualident ':' qualident</pre>
           </div>
           <div class="paragraph">
             <p>If <code>v</code> is a variable parameter of record type or a pointer
-              variable, and if it is of a static type T0, the statement</p>
+              to record variable, and if it is of a static type T0, the statement</p>
           </div>
           <div class="literalblock">
             <div class="content">
@@ -2443,8 +2441,9 @@ Guard         = qualident ':' qualident</pre>
               regarded as if it had the static type T1; else if the dynamic type
               of <code>v</code> is T2, then S2 is executed where <code>v</code> is
               regarded as if it had the static type T2; else S3 is executed. T1 and
-              T2 must be extensions of T0. If no type test is satisfied and if an
-              else clause is missing the program is aborted.</p>
+              T2 must be <em>extensions</em> of T0 (see <a href="#_definition_of_terms">Definition of terms</a>).
+              If no type test is satisfied and if an else clause is missing the program
+              is aborted.</p>
           </div>
           <div class="literalblock">
             <div class="title">Example:</div>
@@ -4437,7 +4436,8 @@ DeclarationSequence3 =
           </div>
           <div class="paragraph">
             <p>A CARRAY and an ARRAY are only assignment compatible if both element
-              types are either CHAR or WCHAR.</p>
+              types are either CHAR or WCHAR. A CARRAY cannot be passed to a parameter
+              of ARRAY type.</p>
           </div>
         </div>
         <div class="sect2">
@@ -4751,6 +4751,24 @@ scFactor  = ident | '(' condition ')' | '~' scFactor</pre>
               <p>If P<sub>a</sub> = POINTER TO T<sub>a</sub> and P<sub>b</sub> = POINTER
                 TO T<sub>b</sub> , P<sub>b</sub> is an extension of P<sub>a</sub>                (P<sub>a</sub> is a base type of P<sub>b</sub>) if T<sub>b</sub>                is an extension of T<sub>a</sub>.</p>
             </dd>
+          </dl>
+        </div>
+        <div class="admonitionblock note">
+          <table>
+            <tr>
+              <td class="icon">
+                <div class="title">Note</div>
+              </td>
+              <td class="content">
+                The extension relation is between record types or between pointer to record types;
+                there is no extension relation between a pointer to record and a
+                record type or between a record and a pointer to record type.
+              </td>
+            </tr>
+          </table>
+        </div>
+        <div class="dlist">
+          <dl>
             <dt class="hdlist1">Assignment compatible</dt>
             <dd>
               <p>An expression e of type T<sub>e</sub> is assignment compatible with
@@ -4763,7 +4781,7 @@ scFactor  = ident | '(' condition ')' | '~' scFactor</pre>
                   </li>
                   <li>
                     <p>T<sub>e</sub> and T<sub>v</sub> are numeric or character types
-                      and T<sub>v</sub> <em>includes</em> T<sub>e</sub> <sup class="footnote">[<a id="_footnoteref_4" class="footnote" href="#_footnote_4" title="View footnote.">4</a>]</sup>;</p>
+                      and T<sub>v</sub> <em>includes</em> T<sub>e</sub> <sup class="footnote">[<a id="_footnoteref_3" class="footnote" href="#_footnote_3" title="View footnote.">3</a>]</sup>;</p>
                   </li>
                   <li>
                     <p>T<sub>v</sub> is a SET type and T<sub>e</sub> is of INTEGER or
@@ -5159,7 +5177,7 @@ IfStatement = IF expression THEN StatementSequence
 	{ElsifStatement} [ElseStatement] END
 ElsifStatement = ELSIF expression THEN StatementSequence
 ElseStatement = ELSE StatementSequence
-CaseStatement = CASE expression OF Case { '|' Case }
+CaseStatement = CASE expression OF ['|'] Case { '|' Case }
 	[ ELSE StatementSequence ] END
 Case = [ CaseLabelList ':' StatementSequence ]
 CaseLabelList = LabelRange { ',' LabelRange }
@@ -5171,7 +5189,7 @@ ElsifStatement2 = ELSIF expression DO StatementSequence
 RepeatStatement = REPEAT StatementSequence UNTIL expression
 ForStatement = FOR ident ':=' expression TO expression
 	[ BY ConstExpression ] DO StatementSequence END
-WithStatement = WITH Guard DO StatementSequence
+WithStatement = WITH ['|'] Guard DO StatementSequence
 	{ '|' Guard DO StatementSequence}
 	[ ELSE StatementSequence ] END
 Guard = qualident ':' qualident
@@ -5412,8 +5430,11 @@ end Unicode</code></pre>
             like ISO Modula like Array1dType{ 1,2,3 } or Array2dType{ {1,2}, {3,4},
             {5,6} } which would also support record literals - allow to register
             a type-bound procedure as a finalzier for a pointer to record - literals
-            and procedure refs as generic arguments, e.g. like ISO Modula - means
-            to avoid record assignment - underscores in number literals</p>
+            and procedure refs as generic arguments, e.g. like ISO Modula - combine
+            generic modules with source code directives so that the directive can
+            check the type of a type param; add built-in compile time functions to
+            check for non anyrec descendant types (isinteger, isnumber, isreal, isboolean)
+            - means to avoid record assignment - underscores in number literals</p>
         </div>
       </div>
     </div>
@@ -5424,14 +5445,10 @@ end Unicode</code></pre>
       <a href="#_footnoteref_1">1</a>. generic modules, inspired by <a href="#Ada83">[Ada83]</a>
     </div>
     <div class="footnote" id="_footnote_2">
-      <a href="#_footnoteref_2">2</a>. this corresponds to the implementation of
-      the Blackbox framework 1.7, see <a href="https://blackboxframework.org" class="bare">https://blackboxframework.org</a>      <a href="#Om01">[Om01]</a>
+      <a href="#_footnoteref_2">2</a>. adopted from <a href="#Om01">[Om01]</a>
     </div>
     <div class="footnote" id="_footnote_3">
-      <a href="#_footnoteref_3">3</a>. adopted from <a href="#Om01">[Om01]</a>
-    </div>
-    <div class="footnote" id="_footnote_4">
-      <a href="#_footnoteref_4">4</a>. character types include strings with length
+      <a href="#_footnoteref_3">3</a>. character types include strings with length
       1
     </div>
   </div>
