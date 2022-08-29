@@ -11,7 +11,7 @@
 = The Programming Language Oberon+
 :author: Rochus Keller 
 :email: me@rochus-keller.ch
-:revdate: 2022-06-06
+:revdate: 2022-08-29
 :revremark: work in progress
 :doctype: article 
 :listing-caption: Listing
@@ -108,7 +108,7 @@ firstLetter
 ....
 
 === Numbers
-Number literals are (unsigned) integer or real constants. The type of an integer literal is the minimal type to which the constant value belongs (see <<Basic types>>). If the literal is specified with the suffix `H` (or `h`), the representation is hexadecimal otherwise the representation is decimal. If a decimal or hexadecimal literal is specified with the suffix `I` (or `i`), then the type is `INTEGER`. If a decimal or hexadecimal constant is specified with the suffix `L` (or `l`), then the type is `LONGINT`.
+Number literals are (unsigned) integer or real constants. The type of an integer literal is the minimal type to which the constant value belongs (see <<Basic types>>). If the literal is specified with the suffix `H` (or `h`), the representation is hexadecimal otherwise the representation is decimal. If a decimal or hexadecimal literal is specified with the suffix `I` (or `i`), then the type is `INT32`. If a decimal or hexadecimal constant is specified with the suffix `L` (or `l`), then the type is `INT64`.
 
 A real number always contains a decimal point and at least one digit before the point. Optionally it may also contain a decimal scale factor. The letter `E`, `D` or `S` (or `e`, `d` or `s`) means _times ten to the power of_. A real number is of type `LONGREAL`, if it has a scale factor containing the letter `D`, or of type `REAL`, if it has a scale factor containing the letter `S`. If the scale factor contains the letter `E` the type is `LONGREAL` if the mantissa or exponent are too large to be represented by `REAL`.
 
@@ -260,7 +260,7 @@ Comments are arbitrary character sequences opened by the bracket `(\*` and close
 == Declarations and scope rules
 Every identifier occurring in a program must be introduced by a declaration, unless it is a predeclared identifier. Declarations also specify certain permanent properties of an object, such as whether it is a constant, a type, a variable, or a procedure. The identifier is then used to refer to the associated object.
 
-The scope of an object x extends textually from the point of its declaration to the end of the block (module, procedure, or record) to which the declaration belongs and hence to which the object is local. It excludes the scopes of equally named objects which are declared in nested blocks. The scope rules are:
+The scope of an object x is the whole block (module, procedure, or record) to which the declaration belongs and hence to which the object is local. It excludes the scopes of equally named objects which are declared in nested blocks. The scope rules are:
 
 1. No identifier may denote more than one object within a given scope (i.e. no identifier may be declared twice in a block);
 2. An object may only be referenced within its scope;
@@ -276,7 +276,7 @@ identdef  = ident ['*' | '-']
 ....
 
 [NOTE]
-Oberon-07 only knows the `*` export mark; all module variables are exported read-only and exported record fields are writable. Oberon+ and Oberon-2 permit finer control writability of exported variables and fields.
+Oberon-07 only knows the `*` export mark; all module variables are exported read-only and exported record fields are writable. Oberon+ and Oberon-2 permit finer writability control of exported variables and fields.
 
 The following identifiers are predeclared; their meaning is defined in the indicated sections; either all capital or all lower case identifiers are supported (only capital versions shown).
 [cols="1,1,1,1"]
@@ -309,7 +309,10 @@ The following identifiers are predeclared; their meaning is defined in the indic
 |HALT     
 |INC      
 |INCL   
-|INT  
+|INT8
+|INT16
+|INT32
+|INT64
 |INTEGER  
 |LEN   
 |LONG  
@@ -389,40 +392,58 @@ Function = procedure(x: integer): integer
 ....
 
 === Basic types
-The basic types are denoted by predeclared identifiers. The associated operators are defined in <<Operators>> and the predeclared function procedures in <<Predeclared procedures>>. Either all capital or all lower case identifiers are supported (only capital versions shown).The values of the given basic types are the following:
+The basic types are denoted by predeclared identifiers. The associated operators are defined in <<Operators>> and the predeclared function procedures in <<Predeclared procedures>>. Either all capital or all lower case identifiers are supported (only capital versions shown). There are fixed and variable size basic types. For the fixed size basic types the byte widths and ranges are explicitly specified herein. The variable size basic types are just alternative names for the fixed size integer types.
+
+The values of the given fixed size basic types are the following:
 
 [cols="2,1,5"]
 |====================================================
 | BOOLEAN   |  1 byte | the truth values true and false
 | BYTE   	|  1 byte | the integers between 0 and 255
 | CHAR      |  1 byte | the characters of the Latin-1 set (0x .. 0ffx)
-| SHORTINT  |  2 byte | the integers between MIN(SHORTINT) and MAX(SHORTINT)
-| INTEGER   |  4 byte | the integers between MIN(INTEGER) and MAX(INTEGER)
-| LONGINT   |  8 byte | the integers between MIN(LONGINT) and MAX(LONGINT)
+| INT8      |  1 byte | the integers between -128 and 127
+| INT16     |  2 byte | the integers between -32'768 and 32'767
+| INT32     |  4 byte | the integers between -2'147'483'648 and 2'147'483'647
+| INT64     |  8 byte | the integers between -9'223'372'036'854'775'808 and 9'223'372'036'854'775'807
 | REAL      |  32 bit | an IEEE 754 floating point number
 | LONGREAL  |  64 bit | an IEEE 754 floating point number
 | SET       |  4 byte | the sets of integers between 0 and MAX(SET)
-| WCHAR	 | 2 byte | the characters of the Unicode BMP set (0x .. 0d7ffx, 0f900x .. 0ffffx)
+| WCHAR	    | 2 byte  | the characters of the Unicode BMP set (0x .. 0d7ffx, 0f900x .. 0ffffx)
 |====================================================
 
-Types LONGINT, INTEGER, SHORTINT and BYTE are integer types, types REAL and LONGREAL are floating point types, and together they are called numeric types. The larger type includes (the values of) the smaller type according to the following relations:
+The values of the given variable size basic types are the following:
+
+[cols="2,5"]
+|====================================================
+| SHORTINT  | the integers between MIN(SHORTINT) and MAX(SHORTINT)
+| INTEGER   | the integers between MIN(INTEGER) and MAX(INTEGER)
+| LONGINT   | the integers between MIN(LONGINT) and MAX(LONGINT)
+|====================================================
+
+Types INT64, INT32, INT16, INT8, LONGINT, INTEGER, SHORTINT and BYTE are integer types, types REAL and LONGREAL are floating point types, and together they are called numeric types. The larger type includes (the values of) the smaller type according to the following relations:
 
 [[type-inclusion-relations]]
 ....
-LONGINT >= INTEGER >= SHORTINT >= BYTE
+INT64 >= INT32 >= INT16 >= INT8
+INT16 >= BYTE
 LONGREAL >= REAL
-REAL >= SHORTINT
-LONGREAL >= INTEGER
+REAL >= INT16
+LONGREAL >= INT32
 WCHAR >= CHAR
+LONGINT >= INTEGER >= SHORTINT
 ....
 
 [NOTE]
-Because of the limited bit precision of the LONGREAL mantissa (which is 52 bits in IEEE 754 double precision representation), a LONGREAL does not fully include LONGINT. Similarly REAL does not include the full range of INTEGER. To convert a LONGINT to a LONGREAL or an INTEGER to a REAL the FLT() built-in function should be used.
+Because of the limited bit precision of the LONGREAL mantissa (which is 52 bits in IEEE 754 double precision representation), a LONGREAL does not fully include INT64. Similarly REAL does not include the full range of INT32. To convert a INT64 to a LONGREAL or an INT32 to a REAL the FLT() built-in function should be used to .
 
-A compiler is free to support other type inclusion relations in addition to the ones specified herein, but shall at least issue a warning if in a given operation information could be lost. A compiler shall at least support the Oberon 90 and Oberon-2 type inclusion relations in this way.
+As as an exceptional case, the type BYTE is compatible with INT8 and CHAR in assignments, parameters and case labels.
+
+A compiler may support other type inclusion relations in addition to the ones specified herein, but shall at least issue a warning if in a given operation information could be lost. A compiler shall at least support the Oberon 90 and Oberon-2 type inclusion relations in this way.
+
+A compiler may map the variable size integer names to any of the fixed size integers as long as the inclusion relations are obeyed. By default a correspondence of LONGINT with INT64, INTEGER with INT32 and SHORTINT with INT16 is assumed.
 
 [NOTE]
-Oberon 90 and Oberon-2 specify the following type inclusion relations which are not compatible with the ones specified herein: LONGREAL >= REAL >= LONGINT >= INTEGER >= SHORTINT.
+Oberon 90 and Oberon-2 specify the following type inclusion relations assuming that LONGINT maps to INT32, INTEGER to INT16 and SHORTINT to INT8: LONGREAL >= REAL >= LONGINT >= INTEGER >= SHORTINT.
 
 === Array types
 An array is a structure consisting of a number of elements which are all of the same type, called the element type. The number of elements of an array is called its length. The elements of the array are designated by indices, which are integers between 0 and the length minus 1.
@@ -462,7 +483,7 @@ Local variables of array type can have variable lengths calculated at runtime; i
 [NOTE]
 In contrast to array pointers allocated with new(), variable length arrays (VLA) can be allocated on the stack instead of the heap (depending on the compiler and supported options), which makes them attractive to low-resource embedded applications where dynamic memory allocation is not feasible. It is also interesting to note that already the length/range of ALGOL 60 arrays was defined using an ordinary arithmetic expression and thus could be calculated at runtime; even ALGOL W had this feature, but unfortunately Wirth removed it in Pascal, and even Oberon-07 still uses a const expression for array lengths evaluated at compile time.
 
-At least array lengths between 1 and MAX(INTEGER) are supported, for both constant and variable lengths.
+At least array lengths between 1 and MAX(INT32) are supported, for both constant and variable lengths.
 
 === Record types
 A record type is a structure consisting of a fixed number of elements, called fields, with possibly different types. The record type declaration specifies the name and type of each field. The scope of the field identifiers extends from the point of their declaration to the end of the record type, but they are also visible within designators referring to elements of record variables (see <<Operands>>). If a record type is exported, field identifiers that are to be visible outside the declaring module must be marked. They are called public fields; unmarked elements are called private fields.
@@ -483,14 +504,14 @@ T0 = record x: integer end
 T1 = record (T0) y: real end
 ....
 
-T1 is a (direct) _extension_ of T0 and T0 is the (direct) base type of T1 (see <<Definition of terms>>). An extended type T1 consists of the fields of its base type and of the fields which are declared in T1. In general all identifiers declared in the extended record must be different from the identifiers declared in its base type record(s). 
+T1 is a (direct) _extension_ of T0 and T0 is the (direct) base type of T1 (see <<Definition of terms>>). An extended type T1 consists of the fields of its base type and of the fields which are declared in T1. Fields declared in the extended record shadow equally named fields declared in a base type. 
 
 // TODO shall we really support this:
 // A pointer field of the base record can be re-declared in the extended record with a pointer type which is an extension of the corresponding base record field type footnote:[this corresponds to the implementation of the Blackbox framework 1.7, see https://blackboxframework.org <<Om01>>].
 
 Alternatively, a pointer to record type can be used as the BaseType; in this case the record base type of the pointer is used as the base type of the declared record.
 
-Each record is implicitly an extension of the predeclared type ANYREC. ANYREC does not contain any fields and can only be used in pointer and variable parameter declarations.
+Each record is implicitly an extension of the predeclared record type ANYREC. ANYREC does not contain any fields and can only be used in pointer and variable parameter declarations.
 
 .Examples:
 ....
@@ -515,11 +536,14 @@ PointerType = ( POINTER TO | '^' ) type
 
 If p is a variable of type `P = POINTER TO T`, a call of the predeclared procedure `NEW(p)` (see <<Predeclared procedures>>) allocates a variable of type T in free storage. If T is a record type or an array type with fixed length, the allocation has to be done with `NEW(p)`; if T is an n-dimensional open array type the allocation has to be done with `NEW(p, e~0~, ..., e~n-1~)` where T is allocated with lengths given by the expressions e~0~, ..., e~n-1~. In either case a pointer to the allocated variable is assigned to `p`. `p` is of type P. The referenced variable `p^` is of type T. Any pointer variable may assume the value NIL, which points to no variable at all. All pointer fields or elements of a newly allocated record or array are set to NIL.
 
+[NOTE]
+Oberon doesn't support taking the address (i.e. making a pointer) of a variable, parameter or record field. If you need a pointer the record or array has to be allocated using NEW().
+
 === Procedure types
 Variables of a procedure type T have a procedure (or NIL) as value. If a procedure P is assigned to a variable of type T, the formal parameter lists and result types (see <<Formal parameters>>) of P and T must _match_ (see <<Definition of terms>>). A procedure P assigned to a variable or a formal parameter must not be a predeclared, nor a type-bound procedure, nor may it access local variables or parameters declared in outer (type-bound) procedures or call procedure which access local variables or parameters declared in outer (type-bound) procedures.
 
 [NOTE]
-Oberon 90, 2 and 07 don't support assignment of procedures local to another procedure to a procedure type variable. Oberon+ doesn't make this restriction.
+Oberon 90, 2 and 07 don't support assignment of procedures local to another procedure to a procedure type variable. Oberon+ doesn't make this restriction, as long as the local procedure (or one of its nested procedures) isn't nested and doesn't depend on local variables or parameters declared in its enclosing procedure.
 
 .Syntax:
 ....
@@ -544,7 +568,7 @@ enumeration = '('  ident { [','] ident } ')'
 (Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday)
 ....
 
-The ordinal number of an enumeration identifier can be obtained using the `ORD` predeclared function procedure, or by just assigning/passing to an integer type variable/parameter. `CAST` is the reverse operation. `MIN` returns the first and `MAX` the last ident of the enumeration. `INC` returns the next and `DEC` the previous ident. If T is an enumeration type then `INC(MAX(T))` and `DEC(MIN(T))` are undefined and terminate the program.
+The ordinal number of an enumeration identifier can be obtained using the `ORD` predeclared function procedure, or by just assigning/passing to an integer type variable or parameter. `CAST` is the reverse operation. `MIN` returns the first and `MAX` the last ident of the enumeration. `INC` returns the next and `DEC` the previous ident. If T is an enumeration type then `INC(MAX(T))` and `DEC(MIN(T))` are undefined and terminate the program.
 
 
 == Variable declarations
@@ -977,7 +1001,7 @@ ExitStatement   = EXIT
 Function procedures require the presence of a return statement indicating the result value. In proper procedures, a return statement is implied by the end of the procedure body. Any explicit return statement therefore appears as an additional (probably exceptional) termination point.
 
 [NOTE]
-The optional expression causes an LL(k) ambiguity which can be resolved in that the parser expects an return expression if the procedure has a return type and vice versa.
+The optional expression causes an LL(k) ambiguity which can be resolved in that the parser expects a return expression if the procedure has a return type and vice versa.
 
 An exit statement is denoted by the symbol EXIT. It specifies termination of the enclosing loop statement and continuation with the statement following that loop statement. Exit statements are contextually, although not syntactically associated with the loop statement which contains them. 
 
@@ -1211,14 +1235,14 @@ The following table lists the predeclared procedures. Some are generic procedure
 |ABS(x)      |numeric type         |type of x      |absolute value
 |CAP(x)      |CHAR                 |CHAR           |x is letter: corresponding capital letter
 |            |WCHAR                |WCHAR          |
-|BITAND(x,y) |x, y: INTEGER or LONGINT|INTEGER or LONGINT|bitwise AND; result is LONGINT if x or y is LONGINT, else INTEGER
-|BITASR(x,n) |x: INTEGER or LONGINT, n: INTEGER|INTEGER or LONGINT|arithmetic shift right by n bits, where n >= 0 and n < SIZE(x)*8; result is LONGINT if x is LONGINT, else INTEGER
-|BITNOT(x)   |x: INTEGER or LONGINT|INTEGER or LONGINT|bitwise NOT; result is LONGINT if x or y is LONGINT, else INTEGER
-|BITOR(x,y)  |x, y: INTEGER or LONGINT|INTEGER or LONGINT|bitwise OR; result is LONGINT if x or y is LONGINT, else INTEGER
-|BITS(x)	 |x: INTEGER		   |SET			   |set corresponding to the integer; the first element corresponds to the least significant digit of the integer and the last element to the most significant digit. 
-|BITSHL(x,n) |x: INTEGER or LONGINT, n: INTEGER|INTEGER or LONGINT|logical shift left by n bits, where n >= 0 and n < SIZE(x)*8; result is LONGINT if x is LONGINT, else INTEGER
-|BITSHR(x,n) |x: INTEGER or LONGINT, n: INTEGER|INTEGER or LONGINT|logical shift right by n bits, where n >= 0 and n < SIZE(x)*8; result is LONGINT if x is LONGINT, else INTEGER
-|BITXOR(x,y) |x, y: INTEGER or LONGINT|INTEGER or LONGINT|bitwise XOR; result is LONGINT if x or y is LONGINT, else INTEGER
+|BITAND(x,y) |x, y: INT32 or INT64|INT32 or INT64|bitwise AND; result is INT64 if x or y is INT64, else INT32
+|BITASR(x,n) |x: INT32 or INT64, n: INT32|INT32 or INT64|arithmetic shift right by n bits, where n >= 0 and n < SIZE(x)*8; result is INT64 if x is INT64, else INT32
+|BITNOT(x)   |x: INT32 or INT64|INT32 or INT64|bitwise NOT; result is INT64 if x or y is INT64, else INT32
+|BITOR(x,y)  |x, y: INT32 or INT64|INT32 or INT64|bitwise OR; result is INT64 if x or y is INT64, else INT32
+|BITS(x)	 |x: INT32		   |SET			   |set corresponding to the integer; the first element corresponds to the least significant digit of the integer and the last element to the most significant digit. 
+|BITSHL(x,n) |x: INT32 or INT64, n: INT32|INT32 or INT64|logical shift left by n bits, where n >= 0 and n < SIZE(x)*8; result is INT64 if x is INT64, else INT32
+|BITSHR(x,n) |x: INT32 or INT64, n: INT32|INT32 or INT64|logical shift right by n bits, where n >= 0 and n < SIZE(x)*8; result is INT64 if x is INT64, else INT32
+|BITXOR(x,y) |x, y: INT32 or INT64|INT32 or INT64|bitwise XOR; result is INT64 if x or y is INT64, else INT32
 |CAST(T,x)	 |T:enumeration type x:ordinal number|enumeration type|the enum item with the ordinal number x; halt if no match
 |			 |T,x: integer type    |T              |convert integer types, accept possible loss of information
 |			 |T, x: cpointer to cstruct or void|T  |unsafe cast of a C pointer (see <<C Types>>)
@@ -1229,41 +1253,40 @@ The following table lists the predeclared procedures. Some are generic procedure
 |            |T = enumeration type |T              |same as MIN(T)
 |            |T = pointer/proc type|T              |nil
 |            |T = record/array type|T              |all fields/elements set to their DEFAULT type
-|FLOOR(x)    |x: REAL or LONGREAL  |INTEGER or LONGINT|largest integer not greater than x; result is LONGINT if x is LONGREAL, else INTEGER
-|FLT(x)      |x: INTEGER or LONGINT|REAL or LONGREAL|Convert integer to real type; result is LONGREAL if x was LONGINT, else REAL, accepting potential loss of information
+|FLOOR(x)    |x: REAL or LONGREAL  |INT32 or INT64|largest integer not greater than x; result is INT64 if x is LONGREAL, else INT32
+|FLT(x)      |x: INT32 or INT64|REAL or LONGREAL|Convert integer to real type; result is LONGREAL if x was INT64, else REAL, accepting potential loss of information
 |LDCMD(m,c)  |m,c: string          |PROCEDURE      |dynamically loads the command procedure with name c from the Oberon+ module with name m; returns NIL if not successful
 |LDMOD(n)    |n: string			   |BOOLEAN        |dynamically loads the Oberon+ module with the given name n; returns TRUE if successful
-|LEN(v, n)   |v: array n: INTEGER  |INTEGER        |length of v in dimension n (first dimension = 0)
-|LEN(v)      |v: array             |INTEGER        |equivalent to LEN(v, 0)
-|            |v: string            |INTEGER        |length of string (including the terminating 0X)
-|LONG(x)     |x: SHORTINT          |INTEGER        |identity
-|            |x: INTEGER           |LONGINT		   |
+|LEN(v, n)   |v: array n: INT32  |INT32        |length of v in dimension n (first dimension = 0)
+|LEN(v)      |v: array             |INT32        |equivalent to LEN(v, 0)
+|            |v: string            |INT32        |length of string (including the terminating 0X)
+|LONG(x)     |x: INT8 or BYTE      |INT16        |identity
+|            |x: INT16             |INT32		   |
+|            |x: INT32             |INT64		   |
 |            |x: REAL              |LONGREAL	   |
 |            |x: CHAR			   |WCHAR		   |projection 
-|			 |x: array of char or Latin-1 string | Unicode string | projection 
 |MAX(T)      |T = basic type       |T              |maximum value of type T
-|            |T = SET              |INTEGER        |maximum element of a set
+|            |T = SET              |INT32        |maximum element of a set
 |            |T = enumeration type |T              |last element of the enumeration
 |MAX(x,y)    |x,y: numeric type    |numeric type   |greater of x and y, returns smallest numeric type including both arguments
 |			 |x,y: character type  |character type |greater of x and y, returns smallest character type including both arguments
 |MIN(T)      |T = basic type       |T              |minimum value of type T
-|            |T = SET              |INTEGER        |0
+|            |T = SET              |INT32        |0
 |            |T = enumeration type |T              |first element of the enumeration
 |MIN(x,y)    |x,y: numeric type    |numeric type   |smaller of x and y, returns smallest numeric type including both arguments
 |			 |x,y: character type  |character type |smaller of x and y, returns smallest character type including both arguments
 |ODD(x)      |integer type         |BOOLEAN        |x MOD 2 = 1
 |ORD(x)      |x: CHAR or WCHAR     |BYTE or SHORT  |ordinal number of x
-|            |x: enumeration type  |INTEGER        |ordinal number of the given identifier
+|            |x: enumeration type  |INT32        |ordinal number of the given identifier
 |            |x: BOOLEAN           |BYTE           |TRUE = 1, FALSE = 0
-|            |x: set type		   |INTEGER		   |number representing the set; the first element corresponds to the least significant digit of the number and the last element to the most significant digit. 
-|SHORT(x)    |x: LONGINT           |INTEGER        |identity
-|            |x: INTEGER           |SHORTINT       |identity
-|            |x: SHORTINT          |BYTE           |identity
+|            |x: set type		   |INT32		   |number representing the set; the first element corresponds to the least significant digit of the number and the last element to the most significant digit. 
+|SHORT(x)    |x: INT64           |INT32        |identity
+|            |x: INT32           |INT16       |identity
+|            |x: INT16           |INT8           |identity
 |            |x: LONGREAL          |REAL           |identity (truncation possible)
 |            |x: WCHAR			   |CHAR		   |projection (0x if there is no projection)
-|			 |x: array of wchar or Unicode string | Latin-1 string | projection ("?" for characters where there is no projection)
-|SIZE(T)     |any type             |INTEGER        |number of bytes required by T
-|STRLEN(s)   |s: array of char or wchar|INTEGER        |dynamic length of the string up to and not including the terminating 0X
+|SIZE(T)     |any type             |INT32        |number of bytes required by T
+|STRLEN(s)   |s: array of char or wchar|INT32        |dynamic length of the string up to and not including the terminating 0X
 |            |s: string literal    |               |
 |WCHR(x)     |integer type        |WCHAR          |Unicode BMP character with ordinal number x
 |===  
@@ -1273,11 +1296,11 @@ The following table lists the predeclared procedures. Some are generic procedure
 [%header,cols="1,2,2,3"] 
 |===
 |Name        |Argument type        |Result type    |Function
-|ASH(x, n)   |x: INTEGER or LONGINT, n: INTEGER|INTEGER or LONGINT|Same as LSL(x,n) for positive n, same as ASR(x,-n) for negative n
-|ASR(x, n)   |x: INTEGER or LONGINT, n: INTEGER|INTEGER or LONGINT|signed shift right, x DIV 2^n_MOD_w^, with w bitwidth of x; result is LONGINT if x is LONGINT, else INTEGER
-|ENTIER(x)   |real type            |LONGINT        |largest integer not greater than x
-|LSL(x,n)    |x: INTEGER or LONGINT, n: INTEGER|INTEGER or LONGINT|logical shift left, x * 2^n_MOD_w^, with w bitwidth of x; result is LONGINT if x is LONGINT, else INTEGER
-|ROR(x, n)   |x, n: INTEGER        |INTEGER        |x rotated right by n bits
+|ASH(x, n)   |x: INT32 or INT64, n: INT32|INT32 or INT64|Same as LSL(x,n) for positive n, same as ASR(x,-n) for negative n
+|ASR(x, n)   |x: INT32 or INT64, n: INT32|INT32 or INT64|signed shift right, x DIV 2^n_MOD_w^, with w bitwidth of x; result is INT64 if x is INT64, else INT32
+|ENTIER(x)   |real type            |INT64        |largest integer not greater than x
+|LSL(x,n)    |x: INT32 or INT64, n: INT32|INT32 or INT64|logical shift left, x * 2^n_MOD_w^, with w bitwidth of x; result is INT64 if x is INT64, else INT32
+|ROR(x, n)   |x, n: INT32        |INT32        |x rotated right by n bits
 |===  
 
 
@@ -1330,8 +1353,8 @@ The predeclared procedure NEW is used to allocate data blocks in free memory. Th
 |Name               |Argument types                |Function
 |COPY(x, v)         |x: CHAR array, string    |v := x
 |                   |v: CHAR array            |
-|PACK(x, n)         |VAR x:REAL; n:INTEGER         |pack x and n into x
-|UNPK(x, n)         |VAR x:REAL; VAR n:INTEGER     |unpack x into x and n
+|PACK(x, n)         |VAR x:REAL; n:INT32         |pack x and n into x
+|UNPK(x, n)         |VAR x:REAL; VAR n:INT32     |unpack x into x and n
 |===
 
 The parameter `n` of PACK represents the exponent of `x`. `PACK(x, y)` is equivalent to `x := x * 2^y^`.
@@ -1515,7 +1538,7 @@ A CPOINTER can point to CSTRUCT, CUNION, CARRAY or VOID.
 
 CSTRUCT and CUNION are the Oberon+ representation of C struct and C union. Field types are restricted to C_Types. 
 
-The basic types correspond to the ones defined in <<Basic Types>>. BOOLEAN and BYTE map to uint8_t, CHAR to the C char type, SHORTINT to int16_t, WCHAR to uint16_t, INTEGER to int32_t, LONGINT to int64_t, REAL to float, LONGREAL to double, and SET to uint32_t.
+The basic types correspond to the ones defined in <<Basic Types>>. BOOLEAN and BYTE map to uint8_t, CHAR to the C char type, INT16 to int16_t, WCHAR to uint16_t, INT32 to int32_t, INT64 to int64_t, REAL to float, LONGREAL to double, and SET to uint32_t.
 
 The formal parameter types of a procedure type compatible with an external library module can only be of C_Type. VAR and IN are not supported in external library modules, and CARRAY cannot be passed by value.
 
@@ -1557,7 +1580,7 @@ Oberon+ implicitly takes the address of a CSTRUCT, CUNION or CARRAY
 
 in both cases the CPOINTER base type must be _assignment compatible_ with the actual or assigned value type (see <<Definition of terms>>); as an extension to this rule, each structured C_Type is compatible with a CPOINTER TO VOID.
 
-Oberon+ supports passing an actual parameter of ARRAY type or a string literal to a formal parameter of CPOINTER TO CARRAY type of a procedure in an external library module, if the CARRAY and ARRAY element types are _assignment compatible_; as an extension to this rule, an ARRAY of an unstructured type (including CPOINTER), a string literal or an INTEGER (and its included types) is compatible with a CPOINTER TO VOID. The compiler or runtime system in use is free to either create a CARRAY copy of the ARRAY or string literal, or to directly pass the memory address for efficiency reasons; in the latter case the compiler or runtime system assure that the memory address remains valid during the call.
+Oberon+ supports passing an actual parameter of ARRAY type or a string literal to a formal parameter of CPOINTER TO CARRAY type of a procedure in an external library module, if the CARRAY and ARRAY element types are _assignment compatible_; as an extension to this rule, an ARRAY of an unstructured type (including CPOINTER), a string literal or an INT32 (and its included types) is compatible with a CPOINTER TO VOID. The compiler or runtime system in use is free to either create a CARRAY copy of the ARRAY or string literal, or to directly pass the memory address for efficiency reasons; in the latter case the compiler or runtime system assure that the memory address remains valid during the call.
 
 [NOTE]
 Remember that taking the address of a variable is a potentially unsafe operation because the memory location the address points to could become invalid.
@@ -1618,7 +1641,7 @@ An ELSIF or ELSE directive must be preceded by an IF or another ELSIF directive.
 == Definition of terms
 
 Integer types::
-    BYTE, SHORTINT, INTEGER, LONGINT 
+    BYTE, INT8, INT16, INT32, INT64, SHORTINT, INTEGER, LONGINT 
     
 Real types::
     REAL, LONGREAL 
@@ -1662,7 +1685,7 @@ Assignment compatible::
 
     . T~e~ and T~v~ are the _same type_;
     . T~e~ and T~v~ are numeric or character types and T~v~ _includes_ T~e~ footnote:[character types include strings with length 1];
-    . T~v~ is a SET type and T~e~ is of INTEGER or smaller type;
+    . T~v~ is a SET type and T~e~ is of INT32 or smaller type;
     . T~v~ is a BYTE type and T~e~ is a Latin-1 character type;
     . T~v~ is an integer type and T~e~ is a enumeration type;
     . T~e~ and T~v~ are record types and T~e~ is a _type extension_ of T~v~ and the dynamic type of v is T~v~;
@@ -1687,7 +1710,8 @@ Array compatible::
     1. T~f~ and T~a~ are the _equal type_, or
     2. T~f~ is an open array, T~a~ is any array, and their element types are _array compatible_, or
     3. T~f~ is an open array of CHAR and T~a~ is a Latin-1 string, or
-    4. T~f~ is an open array of WCHAR and T~a~ is a Unicode BMP or Latin-1 string.
+    4. T~f~ is an open array of WCHAR and T~a~ is a Unicode BMP or Latin-1 string, or
+    5. T~f~ is an open array of BYTE and T~a~ is a byte string.
 
 Expression compatible::
     For a given operator, the types of its operands are expression compatible if they conform to the following table (which shows also the result type of the expression). CHAR and WCHAR arrays that are to be compared must contain 0X as a terminator. Type T1 must be an extension of type T0:
@@ -1984,4 +2008,5 @@ TODO:
 - literals and procedure refs as generic arguments, e.g. like ISO Modula
 - combine generic modules with source code directives so that the directive can check the type of a type param; add built-in compile time functions to check for non anyrec descendant types (isinteger, isnumber, isreal, isboolean)
 - means to avoid record assignment
-- underscores in number literals
+- underscores or ' in number literals
+- embedded type declaration, e.g. cast(type cpointer to void, x)
