@@ -11,7 +11,7 @@
 = The Programming Language Oberon+
 :author: Rochus Keller 
 :email: me@rochus-keller.ch
-:revdate: 2022-08-29
+:revdate: 2023-06-11
 :revremark: work in progress
 :doctype: article 
 :listing-caption: Listing
@@ -28,7 +28,7 @@ The most important features of Oberon+ are block structure, modularity, separate
 
 A major design goal of Oberon in 1987 was to make the language as simple as possible <<Wi87>>. Oberon+ follows the same goal, but taking into account the current state of the art. Backwards compatibility remains ensured: each valid Oberon-2 or Oberon-07 program is also a valid Oberon+ program.
  
-The language allows several simplifications compared to previous Oberon versions: keywords can be written in lower case, all semicolons are optional, and for some keywords there are shorter variants; a declaration sequence can contain more than one CONST, TYPE and VAR section in arbitrary order, interleaved with procedures. 
+The language allows several simplifications compared to previous Oberon versions: reserved words can be written in lower case, all semicolons are optional, and for some reserved words there are shorter variants; a declaration sequence can contain more than one CONST, TYPE and VAR section in arbitrary order, interleaved with procedures. 
 
 Furthermore, enumeration types (known as _scalar types_ in Pascal <<Wi73>>), type-bound procedure types, explicit bit operations and exception handling have been added to the language. IN can be used instead of VAR for constant variable parameters. The length of array type local variable can be specified at runtime (VLA). The foreign function interface (FFI) is a regular feature of the language.
 
@@ -252,7 +252,7 @@ The reserved words consist of either all capital or all lower case letters and c
 |===
 
 [NOTE]
-WITH, LOOP and EXIT are Oberon-2 reserved words not present in Oberon-07. In contrast TRUE and FALSE are Oberon-07 and Oberon+ keywords but just predeclared identifiers in Oberon-2. DEFINITION and PROC are Oberon+ reserved words not present in previous Oberon versions. All lower-case versions are only reserved words in Oberon+. The compiler is supposed to offer a dedicated Oberon-2 and Oberon-07 compatibility mode to support legacy code with reserved word collisions.
+WITH, LOOP and EXIT are Oberon-2 reserved words not present in Oberon-07. In contrast TRUE and FALSE are Oberon-07 and Oberon+ reserved words but just predeclared identifiers in Oberon-2. DEFINITION and PROC are Oberon+ reserved words not present in previous Oberon versions. All lower-case versions are only reserved words in Oberon+. The compiler is supposed to offer a dedicated Oberon-2 and Oberon-07 compatibility mode to support legacy code with reserved word collisions.
 
 === Comments
 Comments are arbitrary character sequences opened by the bracket `(\*` and closed by `*)`. Comments may be nested. They do not affect the meaning of a program. Oberon+ also supports line comments; text starting with `//` up to a line break is considered a comment.
@@ -446,7 +446,7 @@ A compiler may map the variable size integer names to any of the fixed size inte
 Oberon 90 and Oberon-2 specify the following type inclusion relations assuming that LONGINT maps to INT32, INTEGER to INT16 and SHORTINT to INT8: LONGREAL >= REAL >= LONGINT >= INTEGER >= SHORTINT.
 
 === Array types
-An array is a structure consisting of a number of elements which are all of the same type, called the element type. The number of elements of an array is called its length. The elements of the array are designated by indices, which are integers between 0 and the length minus 1.
+An array is a structure consisting of a number of elements which are all of the same type, called the element type. The number of elements of an array is called its length. The length is a positive integer. The elements of the array are designated by indices, which are integers between 0 and the length minus 1. Zero array length are supported in declarations, but accessing such arrays halts the program.
 
 .Syntax:
 ....
@@ -478,12 +478,12 @@ array of char
 [N][M] T
 ....
 
-Local variables of array type can have variable lengths calculated at runtime; in this case the LengthList is prefixed with the VAR keyword; the expression cannot reference other local variables of the same scope.
+Local variables of array type can have variable lengths calculated at runtime; in this case the LengthList is prefixed with the VAR reserved word; the expression cannot reference other local variables of the same scope.
 
 [NOTE]
-In contrast to array pointers allocated with new(), variable length arrays (VLA) can be allocated on the stack instead of the heap (depending on the compiler and supported options), which makes them attractive to low-resource embedded applications where dynamic memory allocation is not feasible. It is also interesting to note that already the length/range of ALGOL 60 arrays was defined using an ordinary arithmetic expression and thus could be calculated at runtime; even ALGOL W had this feature, but unfortunately Wirth removed it in Pascal, and even Oberon-07 still uses a const expression for array lengths evaluated at compile time.
+In contrast to array pointers allocated with new(), variable length arrays (VLA) can be allocated on the stack instead of the heap (depending on the compiler and supported options), which makes them attractive to low-resource embedded applications where dynamic memory allocation is not feasible. It is also interesting to note that already the length/range of ALGOL 60 arrays was defined using an ordinary arithmetic expression and thus could be calculated at runtime; even ALGOL W had this feature, but unfortunately it was removed in Pascal, and even Oberon-07 still uses a const expression for array lengths evaluated at compile time.
 
-At least array lengths between 1 and MAX(INT32) are supported, for both constant and variable lengths.
+Array lengths at least up to MAX(INT32) shall be supported by a compiler, for both constant and variable lengths. 
 
 === Record types
 A record type is a structure consisting of a fixed number of elements, called fields, with possibly different types. The record type declaration specifies the name and type of each field. The scope of the field identifiers extends from the point of their declaration to the end of the record type, but they are also visible within designators referring to elements of record variables (see <<Operands>>). If a record type is exported, field identifiers that are to be visible outside the declaring module must be marked. They are called public fields; unmarked elements are called private fields.
@@ -1076,7 +1076,7 @@ Objects declared in the environment of the procedure are also visible in those p
 [NOTE]
 Procedures can be nested, and inner procedures have access to the parameters or local variables of outer procedures ("non-local access"). This feature was already supported in ALGOL 60 and adopted by Wirth in Pascal; it is also supported by original Oberon and Oberon-2, but no longer by Oberon-07. Previous versions of Oberon+ followed Oberon-07 and didn't support this feature, mostly because the "classic" implementation by "static links" doesn't fit CIL/ECMA-335 or C99 backends; this version of Oberon+ supports an implementation based on hidden var parameters, which is feasible with the mentioned backends.
 
-A procedure body may have no statements in which case the ident after the END keyword can also be left out; in a function procedure with no statements a return statement with a default value is assumed.
+A procedure body may have no statements in which case the ident after the END reserved word can also be left out; in a function procedure with no statements a return statement with a default value is assumed.
 
 .Syntax:
 ....
@@ -1098,7 +1098,7 @@ If a procedure declaration specifies a receiver parameter, the procedure is cons
 
 
 === Formal parameters
-Formal parameters are identifiers declared in the formal parameter list of a procedure. They correspond to actual parameters specified in the procedure call. The correspondence between formal and actual parameters is established when the procedure is called. There are three kinds of parameters, value, variable (VAR) and IN parameters, indicated in the formal parameter list by the absence or presence of the keyword VAR and IN. 
+Formal parameters are identifiers declared in the formal parameter list of a procedure. They correspond to actual parameters specified in the procedure call. The correspondence between formal and actual parameters is established when the procedure is called. There are three kinds of parameters, value, variable (VAR) and IN parameters, indicated in the formal parameter list by the absence or presence of the reserved words VAR and IN. 
 
 Value parameters are local variables to which the value of the corresponding actual parameter is assigned as an initial value. VAR parameters correspond to actual parameters that are variables, and they stand for these variables. 
 
@@ -1368,11 +1368,11 @@ A module is a collection of declarations of constants, types, variables, and pro
 
 .Syntax:
 ....
-module     = MODULE ident [ TypeParams ] [';'] 
+module     = MODULE ident [ MetaParams ] [';'] 
              { ImportList | DeclarationSequence }
 	         [ BEGIN StatementSequence ] END ident ['.']
 ImportList = IMPORT import { [','] import } [';']
-import     = [ ident ':=' ] ImportPath ident [ TypeActuals ] 
+import     = [ ident ':=' ] ImportPath ident [ MetaActuals ] 
 ImportPath = { ident '.' } 
 ....
 
@@ -1450,23 +1450,27 @@ end Lists2
 ----
 
 === Generics
-Oberon+ supports generic programming. Modules can be made generic by adding formal type parameters. Generic modules can be instantiated with different types which enables the design of reusable algorithms and data structures. The instantiation of a generic module occurs when importing it. A generic module can be instantiated more than once in the same module with different type parameters. See <<Modules>>
+Oberon+ supports generic programming. Modules can be made generic by adding formal meta parameters. Meta parameters represent types or constants; the latter include procedures. Meta parameters default to types, but can be explicitly prefixed with the TYPE reserved word; the CONST prefix designates a constant meta parameter. A meta parameter can be constrained with a named type, in which case the actual meta parameter must correspond to this type; the correspondence is established when the generic module is instantiated; the type of the actual meta parameter must be assignment compatible with the constraint type (see <<Definition of terms>>).
+
+Generic modules can be instantiated with different sets of meta actuals which enables the design of reusable algorithms and data structures. The instantiation of a generic module occurs when importing it. A generic module can be instantiated more than once in the same module with different actual meta parameters. See <<Modules>>
 
 .Syntax:
 ....
-TypeParams       = '(' ident { [','] ident } ')'
-TypeActuals      = '(' NamedType { [','] NamedType } ')' 
-module = MODULE ident [ TypeParams ] [';'] { ImportList | DeclarationSequence }
+MetaParams       = '(' MetaSection { [';'] MetaSection } ')'
+MetaSection      = [ TYPE | CONST ] ident { [','] ident } [ ':' TypeConstraint ]
+TypeConstraint   = NamedType
+MetaActuals      = '(' ConstExpression { [','] ConstExpression } ')' 
+module = MODULE ident [ MetaParams ] [';'] { ImportList | DeclarationSequence }
 	[ BEGIN StatementSequence ] END ident ['.']
 ImportList = IMPORT import { [','] import } [';']
-import = [ ident ':=' ] ImportPath ident [ TypeActuals ] 
+import = [ ident ':=' ] ImportPath ident [ MetaActuals ] 
 ....
 
 
-Type parameters can be used within the generic module like normal types wherever no information about the actual type is required. The rules for _same types_ and _equal types_ apply analogously to type parameters, and subsequently also the corresponding assignment, parameter and array compatibility rules (see <<Definitions>>). A type parameter is assumed to have a default value, but nothing is known about its inclusion or extension relationships with other types.
+Meta parameters can be used within the generic module like normal types or constants. If no type constraint is present, the types and constants can be used wherever no information about the actual type is required; otherwise the type constraint determines the permitted operations. The rules for _same types_ and _equal types_ apply analogously to meta parameters, and subsequently also the corresponding assignment, parameter and array compatibility rules. 
 
 [NOTE]
-It follows that a type parameter cannot be the base type of a record or a pointer (because we don't know before instantiation whether the type parameter represents e.g. a record or not); but it is e.g. possible to use a record declared in the same or another generic module as a base type.
+It follows that a type meta parameter can only be the base type of a record or a pointer if a record or pointer to record type constraint is present(because in absence of the type constraint we don't know before instantiation whether the type parameter represents e.g. a record or not); but it is e.g. possible to use a record declared in the same or another generic module as a base type.
 
 See also <<obx-generics-example, this example>>.
 
@@ -1500,7 +1504,7 @@ An external library module is a DEFINITION module with an attribute list, and wi
 ....
 definition = DEFINITION ident attributeList [';'] [ ImportList ] DeclarationSequence3 END ident ['.']
 attributeList = '[' [ attribute { ',' attribute }  ] ']'
-attribute = ident { constExpression }
+attribute = ident { ConstExpression }
 DeclarationSequence3 = 
 	{ CONST { ConstDeclaration [';'] }
 	| TYPE { TypeDeclaration [';'] }
@@ -1758,8 +1762,9 @@ TypeDeclaration = identdef '=' type
 type = NamedType | enumeration
 	| ArrayType | RecordType | PointerType | ProcedureType
 NamedType = qualident
-TypeParams = '(' ident { [','] ident } ')'
-TypeActuals = '(' NamedType { ',' NamedType } ')' 
+MetaParams = '(' MetaSection { [';'] MetaSection } ')'
+MetaSection = [ TYPE | CONST ] ident { [','] ident } [ ':' NamedType ]
+MetaActuals = '(' ConstExpression { [','] ConstExpression } ')' 
 enumeration = '('  ident { [','] ident } ')' 
 ArrayType = ARRAY [ LengthList ] OF type 
 	 | '[' [ LengthList ] ']' type
@@ -1840,10 +1845,10 @@ FormalParameters = '(' [ FPSection { [';'] FPSection } ] ')'
 ReturnType = type
 FPSection = [ VAR | IN ] ident { [','] ident } ':' FormalType 
 FormalType = type
-module = MODULE ident [ TypeParams ] [';'] { ImportList | DeclarationSequence }
+module = MODULE ident [ MetaParams ] [';'] { ImportList | DeclarationSequence }
 	[ BEGIN StatementSequence ] END ident ['.']
 ImportList = IMPORT import { [','] import } [';']
-import = [ ident ':=' ] ImportPath ident [ TypeActuals ] 
+import = [ ident ':=' ] ImportPath ident [ MetaActuals ] 
 ImportPath = { ident '.' } 
 definition = DEFINITION ident [';']  [ ImportList ] 
 	DeclarationSequence2 END ident ['.']

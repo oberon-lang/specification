@@ -17,7 +17,7 @@
     <div class="details">
       <span id="author" class="author">Rochus Keller</span><br>
       <span id="email" class="email"><a href="mailto:me@rochus-keller.ch">me@rochus-keller.ch</a></span><br>
-      <span id="revdate">2022-08-29</span>
+      <span id="revdate">2023-06-11</span>
       <br><span id="revremark">work in progress</span>
     </div>
     <div id="toc" class="toc2">
@@ -139,10 +139,10 @@
         </div>
         <div class="paragraph">
           <p>The language allows several simplifications compared to previous Oberon
-            versions: keywords can be written in lower case, all semicolons are optional,
-            and for some keywords there are shorter variants; a declaration sequence
-            can contain more than one CONST, TYPE and VAR section in arbitrary order,
-            interleaved with procedures.</p>
+            versions: reserved words can be written in lower case, all semicolons
+            are optional, and for some reserved words there are shorter variants;
+            a declaration sequence can contain more than one CONST, TYPE and VAR
+            section in arbitrary order, interleaved with procedures.</p>
         </div>
         <div class="paragraph">
           <p>Furthermore, enumeration types (known as <em>scalar types</em> in Pascal
@@ -655,12 +655,12 @@ digit    = '0' ... '9'</pre>
                 </td>
                 <td class="content">
                   WITH, LOOP and EXIT are Oberon-2 reserved words not present in Oberon-07. In contrast
-                  TRUE and FALSE are Oberon-07 and Oberon+ keywords but just predeclared
-                  identifiers in Oberon-2. DEFINITION and PROC are Oberon+ reserved
-                  words not present in previous Oberon versions. All lower-case versions
-                  are only reserved words in Oberon+. The compiler is supposed to
-                  offer a dedicated Oberon-2 and Oberon-07 compatibility mode to
-                  support legacy code with reserved word collisions.
+                  TRUE and FALSE are Oberon-07 and Oberon+ reserved words but just
+                  predeclared identifiers in Oberon-2. DEFINITION and PROC are Oberon+
+                  reserved words not present in previous Oberon versions. All lower-case
+                  versions are only reserved words in Oberon+. The compiler is supposed
+                  to offer a dedicated Oberon-2 and Oberon-07 compatibility mode
+                  to support legacy code with reserved word collisions.
                 </td>
               </tr>
             </table>
@@ -1298,8 +1298,10 @@ LONGINT &gt;= INTEGER &gt;= SHORTINT</pre>
           <div class="paragraph">
             <p>An array is a structure consisting of a number of elements which are
               all of the same type, called the element type. The number of elements
-              of an array is called its length. The elements of the array are designated
-              by indices, which are integers between 0 and the length minus 1.</p>
+              of an array is called its length. The length is a positive integer.
+              The elements of the array are designated by indices, which are integers
+              between 0 and the length minus 1. Zero array length are supported in
+              declarations, but accessing such arrays halts the program.</p>
           </div>
           <div class="literalblock">
             <div class="title">Syntax:</div>
@@ -1343,8 +1345,9 @@ array of char
           </div>
           <div class="paragraph">
             <p>Local variables of array type can have variable lengths calculated at
-              runtime; in this case the LengthList is prefixed with the VAR keyword;
-              the expression cannot reference other local variables of the same scope.</p>
+              runtime; in this case the LengthList is prefixed with the VAR reserved
+              word; the expression cannot reference other local variables of the
+              same scope.</p>
           </div>
           <div class="admonitionblock note">
             <table>
@@ -1360,7 +1363,7 @@ array of char
                   is not feasible. It is also interesting to note that already the
                   length/range of ALGOL 60 arrays was defined using an ordinary arithmetic
                   expression and thus could be calculated at runtime; even ALGOL
-                  W had this feature, but unfortunately Wirth removed it in Pascal,
+                  W had this feature, but unfortunately it was removed in Pascal,
                   and even Oberon-07 still uses a const expression for array lengths
                   evaluated at compile time.
                 </td>
@@ -1368,8 +1371,8 @@ array of char
             </table>
           </div>
           <div class="paragraph">
-            <p>At least array lengths between 1 and MAX(INT32) are supported, for both
-              constant and variable lengths.</p>
+            <p>Array lengths at least up to MAX(INT32) shall be supported by a compiler,
+              for both constant and variable lengths.</p>
           </div>
         </div>
         <div class="sect2">
@@ -2657,8 +2660,8 @@ end ExceptionExample</pre>
         </div>
         <div class="paragraph">
           <p>A procedure body may have no statements in which case the ident after the
-            END keyword can also be left out; in a function procedure with no statements
-            a return statement with a default value is assumed.</p>
+            END reserved word can also be left out; in a function procedure with
+            no statements a return statement with a default value is assumed.</p>
         </div>
         <div class="literalblock">
           <div class="title">Syntax:</div>
@@ -2689,8 +2692,8 @@ DeclarationSequence  = { CONST { ConstDeclaration [';'] }
               procedure call. The correspondence between formal and actual parameters
               is established when the procedure is called. There are three kinds
               of parameters, value, variable (VAR) and IN parameters, indicated in
-              the formal parameter list by the absence or presence of the keyword
-              VAR and IN.</p>
+              the formal parameter list by the absence or presence of the reserved
+              words VAR and IN.</p>
           </div>
           <div class="paragraph">
             <p>Value parameters are local variables to which the value of the corresponding
@@ -4140,11 +4143,11 @@ end Insert</pre>
         <div class="literalblock">
           <div class="title">Syntax:</div>
           <div class="content">
-            <pre>module     = MODULE ident [ TypeParams ] [';']
+            <pre>module     = MODULE ident [ MetaParams ] [';']
              { ImportList | DeclarationSequence }
 	         [ BEGIN StatementSequence ] END ident ['.']
 ImportList = IMPORT import { [','] import } [';']
-import     = [ ident ':=' ] ImportPath ident [ TypeActuals ]
+import     = [ ident ':=' ] ImportPath ident [ MetaActuals ]
 ImportPath = { ident '.' }</pre>
           </div>
         </div>
@@ -4244,31 +4247,43 @@ end Lists2</code></pre>
           <h3 id="_generics">11.1. Generics</h3>
           <div class="paragraph">
             <p>Oberon+ supports generic programming. Modules can be made generic by
-              adding formal type parameters. Generic modules can be instantiated
-              with different types which enables the design of reusable algorithms
-              and data structures. The instantiation of a generic module occurs when
-              importing it. A generic module can be instantiated more than once in
-              the same module with different type parameters. See <a href="#_modules">Modules</a></p>
+              adding formal meta parameters. Meta parameters represent types or constants;
+              the latter include procedures. Meta parameters default to types, but
+              can be explicitly prefixed with the TYPE reserved word; the CONST prefix
+              designates a constant meta parameter. A meta parameter can be constrained
+              with a named type, in which case the actual meta parameter must correspond
+              to this type; the correspondence is established when the generic module
+              is instantiated; the type of the actual meta parameter must be assignment
+              compatible with the constraint type (see <a href="#_definition_of_terms">Definition of terms</a>).</p>
+          </div>
+          <div class="paragraph">
+            <p>Generic modules can be instantiated with different sets of meta actuals
+              which enables the design of reusable algorithms and data structures.
+              The instantiation of a generic module occurs when importing it. A generic
+              module can be instantiated more than once in the same module with different
+              actual meta parameters. See <a href="#_modules">Modules</a></p>
           </div>
           <div class="literalblock">
             <div class="title">Syntax:</div>
             <div class="content">
-              <pre>TypeParams       = '(' ident { [','] ident } ')'
-TypeActuals      = '(' NamedType { [','] NamedType } ')'
-module = MODULE ident [ TypeParams ] [';'] { ImportList | DeclarationSequence }
+              <pre>MetaParams       = '(' MetaSection { [';'] MetaSection } ')'
+MetaSection      = [ TYPE | CONST ] ident { [','] ident } [ ':' TypeConstraint ]
+TypeConstraint   = NamedType
+MetaActuals      = '(' ConstExpression { [','] ConstExpression } ')'
+module = MODULE ident [ MetaParams ] [';'] { ImportList | DeclarationSequence }
 	[ BEGIN StatementSequence ] END ident ['.']
 ImportList = IMPORT import { [','] import } [';']
-import = [ ident ':=' ] ImportPath ident [ TypeActuals ]</pre>
+import = [ ident ':=' ] ImportPath ident [ MetaActuals ]</pre>
             </div>
           </div>
           <div class="paragraph">
-            <p>Type parameters can be used within the generic module like normal types
-              wherever no information about the actual type is required. The rules
-              for <em>same types</em> and <em>equal types</em> apply analogously
-              to type parameters, and subsequently also the corresponding assignment,
-              parameter and array compatibility rules (see <a href="#_definitions">Definitions</a>).
-              A type parameter is assumed to have a default value, but nothing is
-              known about its inclusion or extension relationships with other types.</p>
+            <p>Meta parameters can be used within the generic module like normal types
+              or constants. If no type constraint is present, the types and constants
+              can be used wherever no information about the actual type is required;
+              otherwise the type constraint determines the permitted operations.
+              The rules for <em>same types</em> and <em>equal types</em> apply analogously
+              to meta parameters, and subsequently also the corresponding assignment,
+              parameter and array compatibility rules.</p>
           </div>
           <div class="admonitionblock note">
             <table>
@@ -4277,11 +4292,12 @@ import = [ ident ':=' ] ImportPath ident [ TypeActuals ]</pre>
                   <div class="title">Note</div>
                 </td>
                 <td class="content">
-                  It follows that a type parameter cannot be the base type of a record or a pointer
-                  (because we don&#8217;t know before instantiation whether the type
-                  parameter represents e.g. a record or not); but it is e.g. possible
-                  to use a record declared in the same or another generic module
-                  as a base type.
+                  It follows that a type meta parameter can only be the base type of a record or a
+                  pointer if a record or pointer to record type constraint is present(because
+                  in absence of the type constraint we don&#8217;t know before instantiation
+                  whether the type parameter represents e.g. a record or not); but
+                  it is e.g. possible to use a record declared in the same or another
+                  generic module as a base type.
                 </td>
               </tr>
             </table>
@@ -4348,7 +4364,7 @@ DeclarationSequence2 = { CONST { ConstDeclaration [';'] }
             <div class="content">
               <pre>definition = DEFINITION ident attributeList [';'] [ ImportList ] DeclarationSequence3 END ident ['.']
 attributeList = '[' [ attribute { ',' attribute }  ] ']'
-attribute = ident { constExpression }
+attribute = ident { ConstExpression }
 DeclarationSequence3 =
 	{ CONST { ConstDeclaration [';'] }
 	| TYPE { TypeDeclaration [';'] }
@@ -5211,8 +5227,9 @@ TypeDeclaration = identdef '=' type
 type = NamedType | enumeration
 	| ArrayType | RecordType | PointerType | ProcedureType
 NamedType = qualident
-TypeParams = '(' ident { [','] ident } ')'
-TypeActuals = '(' NamedType { ',' NamedType } ')'
+MetaParams = '(' MetaSection { [';'] MetaSection } ')'
+MetaSection = [ TYPE | CONST ] ident { [','] ident } [ ':' NamedType ]
+MetaActuals = '(' ConstExpression { [','] ConstExpression } ')'
 enumeration = '('  ident { [','] ident } ')'
 ArrayType = ARRAY [ LengthList ] OF type
 	 | '[' [ LengthList ] ']' type
@@ -5293,10 +5310,10 @@ FormalParameters = '(' [ FPSection { [';'] FPSection } ] ')'
 ReturnType = type
 FPSection = [ VAR | IN ] ident { [','] ident } ':' FormalType
 FormalType = type
-module = MODULE ident [ TypeParams ] [';'] { ImportList | DeclarationSequence }
+module = MODULE ident [ MetaParams ] [';'] { ImportList | DeclarationSequence }
 	[ BEGIN StatementSequence ] END ident ['.']
 ImportList = IMPORT import { [','] import } [';']
-import = [ ident ':=' ] ImportPath ident [ TypeActuals ]
+import = [ ident ':=' ] ImportPath ident [ MetaActuals ]
 ImportPath = { ident '.' }
 definition = DEFINITION ident [';']  [ ImportList ]
 	DeclarationSequence2 END ident ['.']
