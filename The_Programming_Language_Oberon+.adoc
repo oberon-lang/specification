@@ -11,7 +11,7 @@
 = The Programming Language Oberon+
 :author: Rochus Keller 
 :email: me@rochus-keller.ch
-:revdate: 2023-06-11
+:revdate: 2023-09-25
 :revremark: work in progress
 :doctype: article 
 :listing-caption: Listing
@@ -295,6 +295,7 @@ The following identifiers are predeclared; their meaning is defined in the indic
 |BITXOR
 |BOOLEAN  
 |BYTE  
+|BYTES
 |CAST   
 |CAP      
 |CHAR     
@@ -1233,8 +1234,7 @@ The following table lists the predeclared procedures. Some are generic procedure
 |===
 |Name        |Argument type        |Result type    |Function
 |ABS(x)      |numeric type         |type of x      |absolute value
-|CAP(x)      |CHAR                 |CHAR           |x is letter: corresponding capital letter
-|            |WCHAR                |WCHAR          |
+|CAP(x)      |CHAR                 |CHAR           |corresponding capital letter (only for the ASCII subset of the CHAR type)
 |BITAND(x,y) |x, y: INT32 or INT64|INT32 or INT64|bitwise AND; result is INT64 if x or y is INT64, else INT32
 |BITASR(x,n) |x: INT32 or INT64, n: INT32|INT32 or INT64|arithmetic shift right by n bits, where n >= 0 and n < SIZE(x)*8; result is INT64 if x is INT64, else INT32
 |BITNOT(x)   |x: INT32 or INT64|INT32 or INT64|bitwise NOT; result is INT64 if x or y is INT64, else INT32
@@ -1300,7 +1300,7 @@ The following table lists the predeclared procedures. Some are generic procedure
 |ASR(x, n)   |x: INT32 or INT64, n: INT32|INT32 or INT64|signed shift right, x DIV 2^n_MOD_w^, with w bitwidth of x; result is INT64 if x is INT64, else INT32
 |ENTIER(x)   |real type            |INT64        |largest integer not greater than x
 |LSL(x,n)    |x: INT32 or INT64, n: INT32|INT32 or INT64|logical shift left, x * 2^n_MOD_w^, with w bitwidth of x; result is INT64 if x is INT64, else INT32
-|ROR(x, n)   |x, n: INT32        |INT32        |x rotated right by n bits
+|ROR(x, n)   |x, n: INT32        |INT32        |x rotated right by n bits (where the fading right bits re-appear at the left side)
 |===  
 
 
@@ -1313,7 +1313,7 @@ FLOOR(1.5) = 1; FLOOR(-1.5) = -2
 ....
 
 [NOTE]
-The Oberon and Oberon-2 built-in function ASH was replaced by ASR, LSL and ROR in Oberon-07; note that ASR(x,-n) gives not the same result as LSL(x,n) for a given n. LSL(x,n) with positive n is identical to BITSHL(x,n), and ASR(x,n) with positive n is identical to BITASR(x,n). ROR(x,n) with positive n is identical to BITSHR(x,n).
+The Oberon and Oberon-2 built-in function ASH was replaced by ASR and LSL in Oberon-07; note that ASR(x,-n) gives not the same result as LSL(x,n) for a given n. LSL(x,n) with positive n is identical to BITSHL(x,n), and ASR(x,n) with positive n is identical to BITASR(x,n). 
 
 
 
@@ -1325,6 +1325,7 @@ The Oberon and Oberon-2 built-in function ASH was replaced by ASR, LSL and ROR i
 |ASSERT(x)          |x: Boolean expression         |terminate program execution if not x
 |ASSERT(x, n)       |x: Boolean expression         |terminate program execution if not x
 |                   |n: integer constant           |
+|BYTES(a,n)			|a: ARRAY OF BYTE/CHAR; n: numeric or set type |stores the raw memory of n in a; if the length of a is smaller than the number of bytes required to represent n, the program halts
 |DEC(v)             |integer type                  |v := v - 1
 |                   |enumeration type              |previous ident in enumeration
 |DEC(v, n)          |v, n: integer type            |v := v - n
@@ -1338,6 +1339,7 @@ The Oberon and Oberon-2 built-in function ASH was replaced by ASR, LSL and ROR i
 |                   |fixed array                   |
 |NEW(v,x~0~,...,x~n~)   |v: pointer to open array  |allocate v^ with lengths
 |                   |x~i~: integer type              |x~0~..x~n~
+|NUMBER(n,a)		|n: numeric or set type; a: ARRAY OF BYTE/CHAR |interprets the bytes in a as number of the numeric type of n and assigns it to n; if the length of a is smaller than the number of bytes required to represent n, the program halts
 |PCALL(e,p,a~0~,...,a~n~)|VAR e: pointer to anyrec; p: proper procedure type; a~i~: actual parameters |call procedure type p with arguments a~0~...a~n~ corresponding to the parameter list of p; e becomes nil in normal case and gets the pointer passed to RAISE() otherwise
 |RAISE(e)			|e: pointer to anyrec		   |terminates the last protected function called and returns e as the exception value; RAISE() never returns
 |===
@@ -1345,6 +1347,9 @@ The Oberon and Oberon-2 built-in function ASH was replaced by ASR, LSL and ROR i
 In `ASSERT(x, n)` and `HALT(n)`, the interpretation of `n` is left to the underlying system implementation. 
 
 The predeclared procedure NEW is used to allocate data blocks in free memory. There is, however, no way to explicitly dispose an allocated block. Rather, the Oberon+ runtime uses a garbage collector to find the blocks that are not used any more and to make them available for allocation again. A block is in use as long as it can be reached from a global pointer variable via a pointer chain. Cutting this chain (e.g., setting a pointer to NIL) makes the block collectable.
+
+[NOTE]
+The procedures BYTES(a,n) and NUMBER(n,a) are a replacement of the VAR ARRAY OF BYTES trick supported by many Oberon implementations, where any numeric type or array of numeric types can be used as actual parameter.
 
 ==== Deprecated predeclared proper procedures for backward compatibility
 
@@ -1452,7 +1457,7 @@ end Lists2
 === Generics
 Oberon+ supports generic programming. Modules can be made generic by adding formal meta parameters. Meta parameters represent types or constants; the latter include procedures. Meta parameters default to types, but can be explicitly prefixed with the TYPE reserved word; the CONST prefix designates a constant meta parameter. A meta parameter can be constrained with a named type, in which case the actual meta parameter must correspond to this type; the correspondence is established when the generic module is instantiated; the type of the actual meta parameter must be assignment compatible with the constraint type (see <<Definition of terms>>).
 
-Generic modules can be instantiated with different sets of meta actuals which enables the design of reusable algorithms and data structures. The instantiation of a generic module occurs when importing it. A generic module can be instantiated more than once in the same module with different actual meta parameters. See <<Modules>>
+Generic modules can be instantiated with different sets of meta actuals which enables the design of reusable algorithms and data structures. The instantiation of a generic module occurs when importing it. A generic module can be instantiated more than once in the same module with different actual meta parameters. See also <<Modules>>.
 
 .Syntax:
 ....

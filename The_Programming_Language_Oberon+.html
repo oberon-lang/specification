@@ -17,7 +17,7 @@
     <div class="details">
       <span id="author" class="author">Rochus Keller</span><br>
       <span id="email" class="email"><a href="mailto:me@rochus-keller.ch">me@rochus-keller.ch</a></span><br>
-      <span id="revdate">2023-06-11</span>
+      <span id="revdate">2023-09-25</span>
       <br><span id="revremark">work in progress</span>
     </div>
     <div id="toc" class="toc2">
@@ -804,13 +804,16 @@ identdef  = ident ['*' | '-']</pre>
                 <p class="tableblock">BYTE</p>
               </td>
               <td class="tableblock halign-left valign-top">
-                <p class="tableblock">CAST</p>
+                <p class="tableblock">BYTES</p>
               </td>
               <td class="tableblock halign-left valign-top">
-                <p class="tableblock">CAP</p>
+                <p class="tableblock">CAST</p>
               </td>
             </tr>
             <tr>
+              <td class="tableblock halign-left valign-top">
+                <p class="tableblock">CAP</p>
+              </td>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">CHAR</p>
               </td>
@@ -820,11 +823,11 @@ identdef  = ident ['*' | '-']</pre>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">COPY</p>
               </td>
+            </tr>
+            <tr>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">DEC</p>
               </td>
-            </tr>
-            <tr>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">DEFAULT</p>
               </td>
@@ -834,11 +837,11 @@ identdef  = ident ['*' | '-']</pre>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">EXCL</p>
               </td>
+            </tr>
+            <tr>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">FLOOR</p>
               </td>
-            </tr>
-            <tr>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">FLT</p>
               </td>
@@ -848,11 +851,11 @@ identdef  = ident ['*' | '-']</pre>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">INC</p>
               </td>
+            </tr>
+            <tr>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">INCL</p>
               </td>
-            </tr>
-            <tr>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">INT8</p>
               </td>
@@ -862,11 +865,11 @@ identdef  = ident ['*' | '-']</pre>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">INT32</p>
               </td>
+            </tr>
+            <tr>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">INT64</p>
               </td>
-            </tr>
-            <tr>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">INTEGER</p>
               </td>
@@ -876,11 +879,11 @@ identdef  = ident ['*' | '-']</pre>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">LONG</p>
               </td>
+            </tr>
+            <tr>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">LONGINT</p>
               </td>
-            </tr>
-            <tr>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">LONGREAL</p>
               </td>
@@ -890,11 +893,11 @@ identdef  = ident ['*' | '-']</pre>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">MAX</p>
               </td>
+            </tr>
+            <tr>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">MIN</p>
               </td>
-            </tr>
-            <tr>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">NEW</p>
               </td>
@@ -904,11 +907,11 @@ identdef  = ident ['*' | '-']</pre>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">ORD</p>
               </td>
+            </tr>
+            <tr>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">PACK</p>
               </td>
-            </tr>
-            <tr>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">PCALL</p>
               </td>
@@ -918,11 +921,11 @@ identdef  = ident ['*' | '-']</pre>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">REAL</p>
               </td>
+            </tr>
+            <tr>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">ROR</p>
               </td>
-            </tr>
-            <tr>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">SET</p>
               </td>
@@ -932,18 +935,17 @@ identdef  = ident ['*' | '-']</pre>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">SHORTINT</p>
               </td>
+            </tr>
+            <tr>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">SIZE</p>
               </td>
-            </tr>
-            <tr>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">UNPK</p>
               </td>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">WCHR</p>
               </td>
-              <td class="tableblock halign-left valign-top"></td>
               <td class="tableblock halign-left valign-top"></td>
             </tr>
           </tbody>
@@ -2981,18 +2983,9 @@ end Insert</pre>
                     <p class="tableblock">CHAR</p>
                   </td>
                   <td class="tableblock halign-left valign-top">
-                    <p class="tableblock">x is letter: corresponding capital letter</p>
+                    <p class="tableblock">corresponding capital letter (only for the ASCII subset of the
+                      CHAR type)</p>
                   </td>
-                </tr>
-                <tr>
-                  <td class="tableblock halign-left valign-top"></td>
-                  <td class="tableblock halign-left valign-top">
-                    <p class="tableblock">WCHAR</p>
-                  </td>
-                  <td class="tableblock halign-left valign-top">
-                    <p class="tableblock">WCHAR</p>
-                  </td>
-                  <td class="tableblock halign-left valign-top"></td>
                 </tr>
                 <tr>
                   <td class="tableblock halign-left valign-top">
@@ -3796,7 +3789,8 @@ end Insert</pre>
                     <p class="tableblock">INT32</p>
                   </td>
                   <td class="tableblock halign-left valign-top">
-                    <p class="tableblock">x rotated right by n bits</p>
+                    <p class="tableblock">x rotated right by n bits (where the fading right bits re-appear
+                      at the left side)</p>
                   </td>
                 </tr>
               </tbody>
@@ -3828,11 +3822,10 @@ end Insert</pre>
                     <div class="title">Note</div>
                   </td>
                   <td class="content">
-                    The Oberon and Oberon-2 built-in function ASH was replaced by ASR, LSL and ROR in
-                    Oberon-07; note that ASR(x,-n) gives not the same result as LSL(x,n)
-                    for a given n. LSL(x,n) with positive n is identical to BITSHL(x,n),
-                    and ASR(x,n) with positive n is identical to BITASR(x,n). ROR(x,n)
-                    with positive n is identical to BITSHR(x,n).
+                    The Oberon and Oberon-2 built-in function ASH was replaced by ASR and LSL in Oberon-07;
+                    note that ASR(x,-n) gives not the same result as LSL(x,n) for
+                    a given n. LSL(x,n) with positive n is identical to BITSHL(x,n),
+                    and ASR(x,n) with positive n is identical to BITASR(x,n).
                   </td>
                 </tr>
               </table>
@@ -3882,6 +3875,19 @@ end Insert</pre>
                     <p class="tableblock">n: integer constant</p>
                   </td>
                   <td class="tableblock halign-left valign-top"></td>
+                </tr>
+                <tr>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">BYTES(a,n)</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">a: ARRAY OF BYTE/CHAR; n: numeric or set type</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">stores the raw memory of n in a; if the length of a is smaller
+                      than the number of bytes required to represent n, the program
+                      halts</p>
+                  </td>
                 </tr>
                 <tr>
                   <td class="tableblock halign-left valign-top">
@@ -4018,6 +4024,19 @@ end Insert</pre>
                 </tr>
                 <tr>
                   <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">NUMBER(n,a)</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">n: numeric or set type; a: ARRAY OF BYTE/CHAR</p>
+                  </td>
+                  <td class="tableblock halign-left valign-top">
+                    <p class="tableblock">interprets the bytes in a as number of the numeric type of n
+                      and assigns it to n; if the length of a is smaller than the
+                      number of bytes required to represent n, the program halts</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="tableblock halign-left valign-top">
                     <p class="tableblock">PCALL(e,p,a<sub>0</sub>,&#8230;&#8203;,a<sub>n</sub>)</p>
                   </td>
                   <td class="tableblock halign-left valign-top">
@@ -4055,6 +4074,20 @@ end Insert</pre>
                 for allocation again. A block is in use as long as it can be reached
                 from a global pointer variable via a pointer chain. Cutting this
                 chain (e.g., setting a pointer to NIL) makes the block collectable.</p>
+            </div>
+            <div class="admonitionblock note">
+              <table>
+                <tr>
+                  <td class="icon">
+                    <div class="title">Note</div>
+                  </td>
+                  <td class="content">
+                    The procedures BYTES(a,n) and NUMBER(n,a) are a replacement of the VAR ARRAY OF BYTES
+                    trick supported by many Oberon implementations, where any numeric
+                    type or array of numeric types can be used as actual parameter.
+                  </td>
+                </tr>
+              </table>
             </div>
           </div>
           <div class="sect3">
@@ -4261,7 +4294,7 @@ end Lists2</code></pre>
               which enables the design of reusable algorithms and data structures.
               The instantiation of a generic module occurs when importing it. A generic
               module can be instantiated more than once in the same module with different
-              actual meta parameters. See <a href="#_modules">Modules</a></p>
+              actual meta parameters. See also <a href="#_modules">Modules</a>.</p>
           </div>
           <div class="literalblock">
             <div class="title">Syntax:</div>
