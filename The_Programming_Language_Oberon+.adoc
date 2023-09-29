@@ -11,7 +11,7 @@
 = The Programming Language Oberon+
 :author: Rochus Keller 
 :email: me@rochus-keller.ch
-:revdate: 2023-09-25
+:revdate: 2023-09-29
 :revremark: work in progress
 :doctype: article 
 :listing-caption: Listing
@@ -323,6 +323,7 @@ The following identifiers are predeclared; their meaning is defined in the indic
 |MAX  
 |MIN 
 |NEW 
+|NUMBER
 |ODD 
 |ORD 
 |PACK
@@ -436,8 +437,6 @@ LONGINT >= INTEGER >= SHORTINT
 
 [NOTE]
 Because of the limited bit precision of the LONGREAL mantissa (which is 52 bits in IEEE 754 double precision representation), a LONGREAL does not fully include INT64. Similarly REAL does not include the full range of INT32. To convert a INT64 to a LONGREAL or an INT32 to a REAL the FLT() built-in function should be used to .
-
-As as an exceptional case, the type BYTE is compatible with INT8 and CHAR in assignments, parameters and case labels.
 
 A compiler may support other type inclusion relations in addition to the ones specified herein, but shall at least issue a warning if in a given operation information could be lost. A compiler shall at least support the Oberon 90 and Oberon-2 type inclusion relations in this way.
 

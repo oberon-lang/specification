@@ -17,7 +17,7 @@
     <div class="details">
       <span id="author" class="author">Rochus Keller</span><br>
       <span id="email" class="email"><a href="mailto:me@rochus-keller.ch">me@rochus-keller.ch</a></span><br>
-      <span id="revdate">2023-09-25</span>
+      <span id="revdate">2023-09-29</span>
       <br><span id="revremark">work in progress</span>
     </div>
     <div id="toc" class="toc2">
@@ -902,13 +902,16 @@ identdef  = ident ['*' | '-']</pre>
                 <p class="tableblock">NEW</p>
               </td>
               <td class="tableblock halign-left valign-top">
-                <p class="tableblock">ODD</p>
+                <p class="tableblock">NUMBER</p>
               </td>
               <td class="tableblock halign-left valign-top">
-                <p class="tableblock">ORD</p>
+                <p class="tableblock">ODD</p>
               </td>
             </tr>
             <tr>
+              <td class="tableblock halign-left valign-top">
+                <p class="tableblock">ORD</p>
+              </td>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">PACK</p>
               </td>
@@ -918,11 +921,11 @@ identdef  = ident ['*' | '-']</pre>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">RAISE</p>
               </td>
+            </tr>
+            <tr>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">REAL</p>
               </td>
-            </tr>
-            <tr>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">ROR</p>
               </td>
@@ -932,11 +935,11 @@ identdef  = ident ['*' | '-']</pre>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">SHORT</p>
               </td>
+            </tr>
+            <tr>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">SHORTINT</p>
               </td>
-            </tr>
-            <tr>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">SIZE</p>
               </td>
@@ -946,7 +949,6 @@ identdef  = ident ['*' | '-']</pre>
               <td class="tableblock halign-left valign-top">
                 <p class="tableblock">WCHR</p>
               </td>
-              <td class="tableblock halign-left valign-top"></td>
             </tr>
           </tbody>
         </table>
@@ -1262,10 +1264,6 @@ LONGINT &gt;= INTEGER &gt;= SHORTINT</pre>
                 </td>
               </tr>
             </table>
-          </div>
-          <div class="paragraph">
-            <p>As as an exceptional case, the type BYTE is compatible with INT8 and
-              CHAR in assignments, parameters and case labels.</p>
           </div>
           <div class="paragraph">
             <p>A compiler may support other type inclusion relations in addition to
