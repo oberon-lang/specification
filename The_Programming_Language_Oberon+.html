@@ -2222,7 +2222,7 @@ end ExceptionExample</pre>
 <h2 id="_procedure_declarations">10. Procedure declarations</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>A procedure declaration consists of a procedure heading and a procedure body. The heading specifies the procedure identifier and the formal parameters (see <a href="#Formal Parameters">[Formal Parameters]</a>). For type-bound procedures it also specifies the receiver parameter. The body contains declarations and statements. The procedure identifier must be repeated at the end of the procedure declaration unless it has no body.</p>
+<p>A procedure declaration consists of a procedure heading and a procedure body. The heading specifies the procedure identifier and the formal parameters (see <a href="#_formal_parameters">Formal parameters</a>). For type-bound procedures it also specifies the receiver parameter. The body contains declarations and statements. The procedure identifier must be repeated at the end of the procedure declaration unless it has no body.</p>
 </div>
 <div class="paragraph">
 <p>There are two kinds of procedures: proper procedures and function procedures. The latter are activated by a function designator as a constituent of an expression and yield a result that is an operand of the expression. Proper procedures are activated by a procedure call. A procedure is a function procedure if its formal parameters specify a result type. Each control path of a function procedure must return a value.</p>
@@ -3339,7 +3339,7 @@ DeclarationSequence3 =
 <p>CSTRUCT and CUNION are the Oberon+ representation of C struct and C union. Field types are restricted to C_Types.</p>
 </div>
 <div class="paragraph">
-<p>The basic types correspond to the ones defined in <a href="#Basic Types">[Basic Types]</a>. BOOLEAN and BYTE map to uint8_t, CHAR to the C char type, INT16 to int16_t, WCHAR to uint16_t, INT32 to int32_t, INT64 to int64_t, REAL to float, LONGREAL to double, and SET to uint32_t.</p>
+<p>The basic types correspond to the ones defined in <a href="#_basic_types">Basic types</a>. BOOLEAN and BYTE map to uint8_t, CHAR to the C char type, INT16 to int16_t, WCHAR to uint16_t, INT32 to int32_t, INT64 to int64_t, REAL to float, LONGREAL to double, and SET to uint32_t.</p>
 </div>
 <div class="paragraph">
 <p>The formal parameter types of a procedure type compatible with an external library module can only be of C_Type. VAR and IN are not supported in external library modules, and CARRAY cannot be passed by value.</p>
@@ -4114,25 +4114,25 @@ end Unicode</code></pre>
 <div class="ulist">
 <ul>
 <li>
-<p>[<a id="Ada83"></a>] ISO 8652:1987 Programming languages — Ada. International Organization for Standardization.</p>
+<p><a id="Ada83"></a> ISO 8652:1987 Programming languages — Ada. International Organization for Standardization.</p>
 </li>
 <li>
-<p>[<a id="Mo91"></a>] Mössenböck, H.; Wirth, N. (1991). The Programming Language Oberon-2. Structured Programming, 12(4):179-195, 1991. <a href="http://www.ssw.uni-linz.ac.at/Research/Papers/Oberon2.pdf" class="bare">http://www.ssw.uni-linz.ac.at/Research/Papers/Oberon2.pdf</a> (accessed 2020-11-16).</p>
+<p><a id="Mo91"></a> Mössenböck, H.; Wirth, N. (1991). The Programming Language Oberon-2. Structured Programming, 12(4):179-195, 1991. <a href="http://www.ssw.uni-linz.ac.at/Research/Papers/Oberon2.pdf" class="bare">http://www.ssw.uni-linz.ac.at/Research/Papers/Oberon2.pdf</a> (accessed 2020-11-16).</p>
 </li>
 <li>
-<p>[<a id="Oak95"></a>] Kirk, B. et al. (1995). The Oakwood Guidelines for Oberon-2 Compiler Developers. Revision 1A. <a href="https://web.archive.org/web/20171226172235/https://www.math.bas.bg/bantchev/place/oberon/oakwood-guidelines.pdf" class="bare">https://web.archive.org/web/20171226172235/https://www.math.bas.bg/bantchev/place/oberon/oakwood-guidelines.pdf</a> (accessed 2022-04-26).</p>
+<p><a id="Oak95"></a> Kirk, B. et al. (1995). The Oakwood Guidelines for Oberon-2 Compiler Developers. Revision 1A. <a href="https://web.archive.org/web/20171226172235/https://www.math.bas.bg/bantchev/place/oberon/oakwood-guidelines.pdf" class="bare">https://web.archive.org/web/20171226172235/https://www.math.bas.bg/bantchev/place/oberon/oakwood-guidelines.pdf</a> (accessed 2022-04-26).</p>
 </li>
 <li>
-<p>[<a id="Om01"></a>] Oberon microsystems, Inc. (2001). Component Pascal Language Report. <a href="https://web.archive.org/web/20191021025943/http://www.oberon.ch/pdf/CP-Lang.pdf" class="bare">https://web.archive.org/web/20191021025943/http://www.oberon.ch/pdf/CP-Lang.pdf</a> (accessed 2021-01-21).</p>
+<p><a id="Om01"></a> Oberon microsystems, Inc. (2001). Component Pascal Language Report. <a href="https://web.archive.org/web/20191021025943/http://www.oberon.ch/pdf/CP-Lang.pdf" class="bare">https://web.archive.org/web/20191021025943/http://www.oberon.ch/pdf/CP-Lang.pdf</a> (accessed 2021-01-21).</p>
 </li>
 <li>
-<p>[<a id="Wi16"></a>] Wirth, N. (2016). The Programming Language Oberon. <a href="https://people.inf.ethz.ch/wirth/Oberon/Oberon07.Report.pdf" class="bare">https://people.inf.ethz.ch/wirth/Oberon/Oberon07.Report.pdf</a> (accessed 2020-11-16).</p>
+<p><a id="Wi16"></a> Wirth, N. (2016). The Programming Language Oberon. <a href="https://people.inf.ethz.ch/wirth/Oberon/Oberon07.Report.pdf" class="bare">https://people.inf.ethz.ch/wirth/Oberon/Oberon07.Report.pdf</a> (accessed 2020-11-16).</p>
 </li>
 <li>
-<p>[<a id="Wi73"></a>] Wirth, N. (1973). The Programming Language Pascal (Revised Report). ETH Report. <a href="https://doi.org/10.3929/ethz-a-000814158" class="bare">https://doi.org/10.3929/ethz-a-000814158</a> (accessed 2020-11-16).</p>
+<p><a id="Wi73"></a> Wirth, N. (1973). The Programming Language Pascal (Revised Report). ETH Report. <a href="https://doi.org/10.3929/ethz-a-000814158" class="bare">https://doi.org/10.3929/ethz-a-000814158</a> (accessed 2020-11-16).</p>
 </li>
 <li>
-<p>[<a id="Wi87"></a>] Wirth, N. (1987). From Modula to Oberon and the programming language Oberon. ETH Report. <a href="https://doi.org/10.3929/ethz-a-005363226" class="bare">https://doi.org/10.3929/ethz-a-005363226</a> (accessed 2020-11-16).</p>
+<p><a id="Wi87"></a> Wirth, N. (1987). From Modula to Oberon and the programming language Oberon. ETH Report. <a href="https://doi.org/10.3929/ethz-a-005363226" class="bare">https://doi.org/10.3929/ethz-a-005363226</a> (accessed 2020-11-16).</p>
 </li>
 </ul>
 </div>
@@ -4165,7 +4165,7 @@ end Unicode</code></pre>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-02-27 12:35:44 +0200
+Last updated 2026-02-27 15:14:54 +0200
 </div>
 </div>
 </body>
