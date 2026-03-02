@@ -201,7 +201,6 @@ Operators and delimiters are the special characters, or character pairs listed b
 |\|     
 |~   
 |
-| 
 |===
 
 
@@ -337,9 +336,6 @@ The following identifiers are predeclared; their meaning is defined in the indic
 |SIZE 
 |UNPK     
 |WCHR
-|
-|
-|
 |===
 
 [NOTE]
@@ -1065,7 +1061,7 @@ end ExceptionExample
 
 
 == Procedure declarations
-A procedure declaration consists of a procedure heading and a procedure body. The heading specifies the procedure identifier and the formal parameters (see <<Formal Parameters>>). For type-bound procedures it also specifies the receiver parameter. The body contains declarations and statements. The procedure identifier must be repeated at the end of the procedure declaration unless it has no body.
+A procedure declaration consists of a procedure heading and a procedure body. The heading specifies the procedure identifier and the formal parameters (see <<Formal parameters>>). For type-bound procedures it also specifies the receiver parameter. The body contains declarations and statements. The procedure identifier must be repeated at the end of the procedure declaration unless it has no body.
 
 There are two kinds of procedures: proper procedures and function procedures. The latter are activated by a function designator as a constituent of an expression and yield a result that is an operand of the expression. Proper procedures are activated by a procedure call. A procedure is a function procedure if its formal parameters specify a result type. Each control path of a function procedure must return a value.
 
@@ -1546,7 +1542,7 @@ A CPOINTER can point to CSTRUCT, CUNION, CARRAY or VOID.
 
 CSTRUCT and CUNION are the Oberon+ representation of C struct and C union. Field types are restricted to C_Types. 
 
-The basic types correspond to the ones defined in <<Basic Types>>. BOOLEAN and BYTE map to uint8_t, CHAR to the C char type, INT16 to int16_t, WCHAR to uint16_t, INT32 to int32_t, INT64 to int64_t, REAL to float, LONGREAL to double, and SET to uint32_t.
+The basic types correspond to the ones defined in <<Basic types>>. BOOLEAN and BYTE map to uint8_t, CHAR to the C char type, INT16 to int16_t, WCHAR to uint16_t, INT32 to int32_t, INT64 to int64_t, REAL to float, LONGREAL to double, and SET to uint32_t.
 
 The formal parameter types of a procedure type compatible with an external library module can only be of C_Type. VAR and IN are not supported in external library modules, and CARRAY cannot be passed by value.
 
@@ -2000,13 +1996,13 @@ end Unicode
 [appendix]
 // [bibliography]
 == References
-- [[[Ada83]]] ISO 8652:1987 Programming languages — Ada. International Organization for Standardization.
-- [[[Mo91]]] Mössenböck, H.; Wirth, N. (1991). The Programming Language Oberon-2. Structured Programming, 12(4):179-195, 1991. http://www.ssw.uni-linz.ac.at/Research/Papers/Oberon2.pdf (accessed 2020-11-16).
-- [[[Oak95]]] Kirk, B. et al. (1995). The Oakwood Guidelines for Oberon-2 Compiler Developers. Revision 1A. https://web.archive.org/web/20171226172235/https://www.math.bas.bg/bantchev/place/oberon/oakwood-guidelines.pdf (accessed 2022-04-26).
-- [[[Om01]]] Oberon microsystems, Inc. (2001). Component Pascal Language Report. https://web.archive.org/web/20191021025943/http://www.oberon.ch/pdf/CP-Lang.pdf (accessed 2021-01-21).
-- [[[Wi16]]] Wirth, N. (2016). The Programming Language Oberon. https://people.inf.ethz.ch/wirth/Oberon/Oberon07.Report.pdf (accessed 2020-11-16).
-- [[[Wi73]]] Wirth, N. (1973). The Programming Language Pascal (Revised Report). ETH Report. https://doi.org/10.3929/ethz-a-000814158 (accessed 2020-11-16).
-- [[[Wi87]]] Wirth, N. (1987). From Modula to Oberon and the programming language Oberon. ETH Report. https://doi.org/10.3929/ethz-a-005363226 (accessed 2020-11-16).
+- [[Ada83]] ISO 8652:1987 Programming languages — Ada. International Organization for Standardization.
+- [[Mo91]] Mössenböck, H.; Wirth, N. (1991). The Programming Language Oberon-2. Structured Programming, 12(4):179-195, 1991. http://www.ssw.uni-linz.ac.at/Research/Papers/Oberon2.pdf (accessed 2020-11-16).
+- [[Oak95]] Kirk, B. et al. (1995). The Oakwood Guidelines for Oberon-2 Compiler Developers. Revision 1A. https://web.archive.org/web/20171226172235/https://www.math.bas.bg/bantchev/place/oberon/oakwood-guidelines.pdf (accessed 2022-04-26).
+- [[Om01]] Oberon microsystems, Inc. (2001). Component Pascal Language Report. https://web.archive.org/web/20191021025943/http://www.oberon.ch/pdf/CP-Lang.pdf (accessed 2021-01-21).
+- [[Wi16]] Wirth, N. (2016). The Programming Language Oberon. https://people.inf.ethz.ch/wirth/Oberon/Oberon07.Report.pdf (accessed 2020-11-16).
+- [[Wi73]] Wirth, N. (1973). The Programming Language Pascal (Revised Report). ETH Report. https://doi.org/10.3929/ethz-a-000814158 (accessed 2020-11-16).
+- [[Wi87]] Wirth, N. (1987). From Modula to Oberon and the programming language Oberon. ETH Report. https://doi.org/10.3929/ethz-a-005363226 (accessed 2020-11-16).
 
 
 TODO: 
