@@ -11,7 +11,7 @@
 = The Programming Language Oberon+
 :author: Rochus Keller 
 :email: me@rochus-keller.ch
-:revdate: 2023-09-29
+:revdate: 2024-02-03
 :revremark: work in progress
 :doctype: article 
 :listing-caption: Listing
@@ -436,7 +436,7 @@ LONGINT >= INTEGER >= SHORTINT
 ....
 
 [NOTE]
-Because of the limited bit precision of the LONGREAL mantissa (which is 52 bits in IEEE 754 double precision representation), a LONGREAL does not fully include INT64. Similarly REAL does not include the full range of INT32. To convert a INT64 to a LONGREAL or an INT32 to a REAL the FLT() built-in function should be used to .
+Because of the limited bit precision of the LONGREAL mantissa (which is 52 bits in IEEE 754 double precision representation), a LONGREAL does not fully include INT64. Similarly REAL does not include the full range of INT32. To convert a INT64 to a LONGREAL or an INT32 to a REAL the FLT() built-in function should be used.
 
 A compiler may support other type inclusion relations in addition to the ones specified herein, but shall at least issue a warning if in a given operation information could be lost. A compiler shall at least support the Oberon 90 and Oberon-2 type inclusion relations in this way.
 
@@ -483,7 +483,7 @@ Local variables of array type can have variable lengths calculated at runtime; i
 [NOTE]
 In contrast to array pointers allocated with new(), variable length arrays (VLA) can be allocated on the stack instead of the heap (depending on the compiler and supported options), which makes them attractive to low-resource embedded applications where dynamic memory allocation is not feasible. It is also interesting to note that already the length/range of ALGOL 60 arrays was defined using an ordinary arithmetic expression and thus could be calculated at runtime; even ALGOL W had this feature, but unfortunately it was removed in Pascal, and even Oberon-07 still uses a const expression for array lengths evaluated at compile time.
 
-Array lengths at least up to MAX(INT32) shall be supported by a compiler, for both constant and variable lengths. 
+Array lengths of at least MAX(INT32) shall be accepted by a compiler, for constant, dynamic and variable lengths. 
 
 === Record types
 A record type is a structure consisting of a fixed number of elements, called fields, with possibly different types. The record type declaration specifies the name and type of each field. The scope of the field identifiers extends from the point of their declaration to the end of the record type, but they are also visible within designators referring to elements of record variables (see <<Operands>>). If a record type is exported, field identifiers that are to be visible outside the declaring module must be marked. They are called public fields; unmarked elements are called private fields.
@@ -1298,7 +1298,7 @@ The following table lists the predeclared procedures. Some are generic procedure
 |ASH(x, n)   |x: INT32 or INT64, n: INT32|INT32 or INT64|Same as LSL(x,n) for positive n, same as ASR(x,-n) for negative n
 |ASR(x, n)   |x: INT32 or INT64, n: INT32|INT32 or INT64|signed shift right, x DIV 2^n_MOD_w^, with w bitwidth of x; result is INT64 if x is INT64, else INT32
 |ENTIER(x)   |real type            |INT64        |largest integer not greater than x
-|LSL(x,n)    |x: INT32 or INT64, n: INT32|INT32 or INT64|logical shift left, x * 2^n_MOD_w^, with w bitwidth of x; result is INT64 if x is INT64, else INT32
+|LSL(x,n)    |x: INT32 or INT64, n: INT32|INT32 or INT64|logical shift left, x * 2^n_MOD_w^, with w bitwidth of x; result is INT64 if x is INT64, else INT32; negative n are supported and shift to the right
 |ROR(x, n)   |x, n: INT32        |INT32        |x rotated right by n bits (where the fading right bits re-appear at the left side)
 |===  
 
@@ -1312,7 +1312,7 @@ FLOOR(1.5) = 1; FLOOR(-1.5) = -2
 ....
 
 [NOTE]
-The Oberon and Oberon-2 built-in function ASH was replaced by ASR and LSL in Oberon-07; note that ASR(x,-n) gives not the same result as LSL(x,n) for a given n. LSL(x,n) with positive n is identical to BITSHL(x,n), and ASR(x,n) with positive n is identical to BITASR(x,n). 
+The Oberon and Oberon-2 built-in functions ASH was replaced by ASR and LSL in Oberon-07. LSL(x,n) with positive n is identical to BITSHL(x,n), LSL(x,n) with a negative n is identical to BITSHR(x,-n), and ASR(x,n) with positive n is identical to BITASR(x,n). The Oberon and Oberon-2 built-in function SYSTEM.LSH corresponds to LSL.
 
 
 
@@ -1732,8 +1732,8 @@ Expression compatible::
 |+ - * /   |SET                 |SET                 |SET
 |DIV MOD   |integer             |integer             |smallest integer type type including both operands
 |OR & ~    |BOOLEAN             |BOOLEAN             |BOOLEAN
-|= # <     |numeric             |numeric             |BOOLEAN
-|\<= > >=   |CHAR                |CHAR                |BOOLEAN
+|= # <  \<= > >= |numeric             |numeric             |BOOLEAN
+|          |CHAR                |CHAR                |BOOLEAN
 |          |CHAR array, string   |CHAR array, string   |BOOLEAN
 |= #       |BOOLEAN             |BOOLEAN             |BOOLEAN
 |          |SET                 |SET                 |BOOLEAN
